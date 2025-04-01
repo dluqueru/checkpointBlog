@@ -1,15 +1,15 @@
 <header class="navigator bg-white dark:bg-gray-800 shadow-lg">
     <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
         <div class="hidden md:flex space-x-6">
-            <a href="#" class="text-2xl font-bold text-indigo-800 dark:text-white transition-colors duration-300">
+            <a routerLink="/" class="text-2xl font-bold text-indigo-800 dark:text-white transition-colors duration-300">
                 <img class="w-[70px]" src="assets/images/logo.png" alt="logo">
             </a>
-            <a href="#" class="text-2xl font-bold text-indigo-800 dark:text-white transition-colors duration-300">
+            <a routerLink="/" class="text-2xl font-bold text-indigo-800 dark:text-white transition-colors duration-300">
                 <img class="h-[30px] mt-3" src="assets/images/letrasLogo.png" alt="letrasLogo">
             </a>
         </div>
         <div class="hidden md:flex space-x-6">
-            <a href="#" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">Home</a>
+            <a routerLink="/" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">Home</a>
             <a href="#" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">About</a>
             <a href="#" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">History</a>
             <a href="#" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">Register</a>
@@ -17,6 +17,7 @@
         @if (this.authService.isLogged()) {
             <a href="#" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">
                 {{authService.username}}
+                Role: {{authService.role }}
             </a>
             <div class="hidden md:flex items-center space-x-4">
                 <button id="darkModeToggle" class="text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white focus:outline-none transition-colors duration-300">

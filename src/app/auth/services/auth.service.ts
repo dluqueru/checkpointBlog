@@ -14,16 +14,20 @@ export class AuthService {
   private http: HttpClient = inject(HttpClient);
   private baseUrl: string = 'http://localhost:8080';
   private _username: string = '';
+  private _role: string = '';
   private isLoggedSignal = signal<boolean>(false);
   private router: Router = inject(Router);
 
   constructor() {
     let username = localStorage.getItem('username');
+    let role = localStorage.getItem('role');
     if (username) {
       this._username = username;
       this.isLoggedSignal.set(true);
     }
-    this.validateToken().subscribe(resp => console.log(resp))
+    if (role) {
+      this._role = role;
+    }
   }
 
   getDecodedAccessToken(token: string): Token | null {
@@ -48,28 +52,15 @@ export class AuthService {
     }
   }
 
-  validateToken() {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${localStorage.getItem('token') || ''}`)
-    // ESTO NO ES EQUIVALENTE YA QUE SET DEVUELVE UNA CABECERA NUEVA NO MODIFICA 
-    // const header = new HttpHeaders()
-    // header.set('Authorization', `Bearer ${localStorage.getItem('token') || ''}`)
-    return this.http.get<loginResponse>(`${this.baseUrl}/verify`, { headers })
-      .pipe(
-        map(resp => {
-          this.setUserSession(resp.token);
-          return true;
-        }),
-        catchError(err => of(false))
-
-      )
-  }
-
   setUserSession(token: string) {
     const decodedToken = this.getDecodedAccessToken(token);
     if (decodedToken) {
-      console.log('Decoded token: ',decodedToken)
+      console.log('Decoded token: ', decodedToken);
       this._username = decodedToken.username;
+      this._role = decodedToken.role;
       localStorage.setItem('token', token);
+      localStorage.setItem('username', this._username);
+      localStorage.setItem('role', this._role);
       this.isLoggedSignal.set(true);
     }
   }
@@ -91,15 +82,22 @@ export class AuthService {
     return this._username;
   }
 
+  get role() {
+    return this._role;
+  }
+
   register(userData: User): Observable<RegisterResponse> {
-    console.log(userData)
+    console.log(userData);
     return this.http.post<any>(`${this.baseUrl}/register`, userData);
   }
 
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('role');
     this._username = '';
+    this._role = '';
     this.isLoggedSignal.set(false);
-    this.router.navigateByUrl('/login')
+    this.router.navigateByUrl('/login');
   }
 }

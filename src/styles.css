@@ -22,6 +22,10 @@
     background-color: var(--background-gray)!important
 }
 
+.text-gray {
+    color: var(--background-gray)!important
+}
+
 .btn-primary {
     background-color: var(--button-turquoise) !important
 }

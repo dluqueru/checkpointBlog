@@ -26,10 +26,13 @@ export class LoginComponent {
             title: "Login correcto",
             text: "Has iniciado sesión",
             icon: 'success',
-            confirmButtonText: 'Aceptar'
+            iconColor: '#008B8B',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#008B8B',
+            background: 'rgba(44, 44, 44, 0.95)',
+            color: '#FFFFFF'
           }).then(
             () => this.router.navigateByUrl('/') // Redirección a home tras el login
-
           )
 
         },
@@ -37,8 +40,11 @@ export class LoginComponent {
           title: 'Error!',
           text: "Credenciales incorrectas",
           icon: 'error',
+          iconColor: '#d32f2f',
           confirmButtonText: 'Aceptar',
-
+          confirmButtonColor: '#008B8B',
+          background: 'rgba(44, 44, 44, 0.95)',
+          color: '#FFFFFF'
         })
       })
   }
