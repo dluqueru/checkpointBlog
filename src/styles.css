@@ -2,6 +2,7 @@
     --vibrant-purple: #6A0DAD;
     --nav-gray: #171717;
     --background-gray: #1E1E1E;
+    --sidebar-gray: #303030;
     --medium-gray: #3A3A3A;
     --pure-white: #FFFFFF;
     --accent-silver: #C0C0C0;
@@ -20,6 +21,10 @@
 
 .background {
     background-color: var(--background-gray)!important
+}
+
+.sidebar {
+    background-color: var(--sidebar-gray)!important
 }
 
 .text-gray {
