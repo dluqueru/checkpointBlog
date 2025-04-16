@@ -86,9 +86,9 @@ export class AuthService {
     return this._role;
   }
 
-  register(userData: User): Observable<RegisterResponse> {
-    console.log(userData);
-    return this.http.post<any>(`${this.baseUrl}/register`, userData);
+  register(user: User): Observable<RegisterResponse> {
+    console.log(user);
+    return this.http.post<any>(`${this.baseUrl}/register`, user);
   }
 
   logout() {
