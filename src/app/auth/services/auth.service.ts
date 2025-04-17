@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, map, Observable, of, pipe, tap } from 'rxjs';
-import { loginResponse, RegisterResponse, Token, User } from '../../shared/interfaces/auth';
+import { LoginResponse, RegisterResponse, Token, User, UserResponse } from '../../shared/interfaces/auth';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { ValidationErrors } from '@angular/forms';
@@ -15,18 +15,23 @@ export class AuthService {
   private baseUrl: string = 'http://localhost:8080';
   private _username: string = '';
   private _role: string = '';
+  private _photo: string = '';
   private isLoggedSignal = signal<boolean>(false);
   private router: Router = inject(Router);
 
   constructor() {
     let username = localStorage.getItem('username');
     let role = localStorage.getItem('role');
+    let photo = localStorage.getItem('photo');
     if (username) {
       this._username = username;
       this.isLoggedSignal.set(true);
     }
     if (role) {
       this._role = role;
+    }
+    if (photo) {
+      this._photo = photo;
     }
   }
 
@@ -67,12 +72,33 @@ export class AuthService {
 
   login(username: string, password: string) {
     console.log('Enviando:', { username, password });
-    return this.http.post<loginResponse>(`${this.baseUrl}/login`, { username, password })
+    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, { username, password })
       .pipe(
         tap({
           next: response => {
             console.log("Se loguió");
             this.setUserSession(response.token);
+            
+            this.getUserPhoto(username, response.token).subscribe({
+              next: () => console.log("Foto guardada en localStorage"),
+              error: err => console.error("Error al obtener foto:", err)
+            });
+          }
+        })
+      )
+  }
+
+  getUserPhoto(username: string, token: string) {
+    const headers = new HttpHeaders({
+      'Authorization': token
+    });
+
+    return this.http.get<UserResponse>(`${this.baseUrl}/user/${username}`, { headers })
+      .pipe(
+        tap({
+          next: response => {
+            this._photo = response.photo;
+            localStorage.setItem('photo', response.photo);
           }
         })
       )
@@ -86,6 +112,10 @@ export class AuthService {
     return this._role;
   }
 
+  get photo() {
+    return this._photo;
+  }
+
   register(user: User): Observable<RegisterResponse> {
     console.log(user);
     return this.http.post<any>(`${this.baseUrl}/register`, user);
@@ -95,8 +125,10 @@ export class AuthService {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     localStorage.removeItem('role');
+    localStorage.removeItem('photo');
     this._username = '';
     this._role = '';
+    this._photo = '';
     this.isLoggedSignal.set(false);
     this.router.navigateByUrl('/login');
   }

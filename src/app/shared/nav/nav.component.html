@@ -17,6 +17,12 @@
             }
         </div>
         @if (this.authService.isLogged()) {
+            <img 
+            [src]="authService.photo"
+            [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
+            alt="Foto de perfil"
+            class="w-12 h-12 object-cover rounded-full border-2 border-gray-300 dark:border-gray-600 hover:cursor-pointer"
+            />
             <a href="#" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">
                 {{authService.username}}
                 Role: {{authService.role }}

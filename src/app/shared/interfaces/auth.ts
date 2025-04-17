@@ -1,4 +1,4 @@
-export interface loginResponse{
+export interface LoginResponse{
     token: string;
 }
 
@@ -8,6 +8,14 @@ export interface User{
     email: string,
     photo: string,
     password: string
+}
+
+export interface UserResponse{
+    username: string,
+    name: string,
+    email: string,
+    photo: string,
+    role: string
 }
 
 export interface RegisterResponse{

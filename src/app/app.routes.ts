@@ -20,4 +20,8 @@ export const routes: Routes = [
         component: RegisterComponent,
         canActivate: [redirectIfLoggedGuard]
     },
+    {
+        path: '**',
+        redirectTo: ''
+    }
 ];
