@@ -107,9 +107,17 @@
               type="password"
               placeholder="Password"
               required
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};':\\|,.<>/?]).{8,}$"
             />
             @if (password.touched && password.invalid) {
-              <p class="mt-1 text-xs text-red-700 dark:text-red-500">Introduce una contraseña válida</p>
+              @if (password.errors?.['required']) {
+                <p class="mt-1 text-xs text-red-700 dark:text-red-500">Introduce una contraseña</p>
+              }
+              @if (password.errors?.['pattern']) {
+                <p class="mt-1 text-xs text-red-700 dark:text-red-500">
+                  La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.
+                </p>
+              }
             }
           </div>
           <button

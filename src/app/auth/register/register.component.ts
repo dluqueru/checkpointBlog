@@ -45,6 +45,21 @@ export class RegisterComponent {
       return;
     }
   
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?]).{8,}$/;
+    if (!passwordPattern.test(this.user.password)) {
+      Swal.fire({
+        title: 'Contraseña inválida',
+        text: 'Debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.',
+        icon: 'error',
+        iconColor: '#d32f2f',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#008B8B',
+        background: 'rgba(44, 44, 44, 0.95)',
+        color: '#FFFFFF'
+      });
+      return;
+    }
+  
     if (this.imagePreview) {
       this.user.photo = this.imagePreview;
     }
@@ -61,7 +76,7 @@ export class RegisterComponent {
           background: 'rgba(44, 44, 44, 0.95)',
           color: '#FFFFFF'
         }).then(() => {
-          this.router.navigateByUrl('/login') // Redirección a home tras registro
+          this.router.navigateByUrl('/login'); // Redirección a login tras registro
         });
       },
       error: (error) => {
@@ -85,7 +100,7 @@ export class RegisterComponent {
         });
       }
     });
-  }
+  }  
 
   togglePreview() {
     this.showPreview = !this.showPreview;
@@ -122,4 +137,12 @@ export class RegisterComponent {
     }
   }
 
+  validatePassword(control: AbstractControl): ValidationErrors | null {
+    const password = control.value;
+    if (!password) return null;
+  
+    const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?]).{8,}$/;
+  
+    return pattern.test(password) ? null : { invalidPassword: true };
+  }
 }
