@@ -12,14 +12,13 @@ export class ArticlesService {
 
   private http: HttpClient = inject(HttpClient);
   private authService: AuthService = inject(AuthService);
-  private isLogged: boolean = false;
   private urlBase: string = 'http://localhost:8080';
 
   private articleListSignal = signal<Article[]>([]);
   private articleMainImageSignal = signal<Map<number, Image>>(new Map());
   private articleAuthorMapSignal = signal<Map<string, User>>(new Map());
 
-  constructor(){ }
+  constructor() { }
 
   get articles() {
     return this.articleListSignal;
@@ -32,22 +31,27 @@ export class ArticlesService {
   get articleAuthor() {
     return this.articleAuthorMapSignal;
   }
-  
+
   getArticles(): void {
+    this.articleListSignal.set([]);
+    this.loadArticles();
+  }
+
+  loadArticles(): void {
     this.http.get<Article[]>(`${this.urlBase}/article`).subscribe({
       next: articles => {
-        console.log('Artículos: ', articles);
+        if (articles.length === 0) return;
         this.articleListSignal.set(articles);
-  
+
         const imageRequests = articles.map(article =>
           this.http.get<Image[]>(`${this.urlBase}/images/${article.id}`)
         );
-  
+
         const uniqueUsernames = [...new Set(articles.map(article => article.username))];
         const userRequests = uniqueUsernames.map(username =>
           this.http.get<User>(`${this.urlBase}/user/${username}`)
         );
-  
+
         forkJoin([forkJoin(imageRequests), forkJoin(userRequests)]).subscribe({
           next: ([allImagesLists, allUsers]) => {
             const imageMap = new Map<number, Image>();
@@ -59,7 +63,7 @@ export class ArticlesService {
               }
             });
             this.articleMainImageSignal.set(imageMap);
-  
+
             const userMap = new Map<string, User>();
             uniqueUsernames.forEach((username, index) => {
               userMap.set(username, allUsers[index]);
