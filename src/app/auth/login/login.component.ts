@@ -21,7 +21,6 @@ export class LoginComponent {
     this.authService.login(this.myForm.value.username, this.myForm.value.password)
       .subscribe({
         next: () => {
-          
           Swal.fire({
             title: "Login correcto",
             text: "Has iniciado sesión",
@@ -31,10 +30,7 @@ export class LoginComponent {
             confirmButtonColor: '#008B8B',
             background: 'rgba(44, 44, 44, 0.95)',
             color: '#FFFFFF'
-          }).then(
-            () => this.router.navigateByUrl('/') // Redirección a home tras el login
-          )
-
+          });
         },
         error: error => Swal.fire({
           title: 'Error!',
@@ -46,6 +42,6 @@ export class LoginComponent {
           background: 'rgba(44, 44, 44, 0.95)',
           color: '#FFFFFF'
         })
-      })
+      });
   }
 }

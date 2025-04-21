@@ -5,10 +5,11 @@ import { CategoriesService } from '../services/categories.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { DefaultImageDirective } from '../../shared/directives/default-image.directive';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-list',
-  imports: [SidebarComponent, DatePipe, DefaultImageDirective, CommonModule, FormsModule],
+  imports: [SidebarComponent, DatePipe, DefaultImageDirective, CommonModule, FormsModule, RouterLink],
   templateUrl: './list.component.html'
 })
 export class ListComponent {

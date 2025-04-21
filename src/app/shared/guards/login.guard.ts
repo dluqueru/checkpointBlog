@@ -6,6 +6,10 @@ export const loginGuard: CanActivateFn = (route, state) => {
   const authService: AuthService = inject(AuthService);
   const router = inject(Router);
 
-  console.log("Guardián de login");
-  return authService.isLogged() ? true : router.createUrlTree(['/login']);
+  if (authService.isLoggedF()) {
+    return true;
+  } else {
+    authService.redirectUrl = state.url;
+    return router.createUrlTree(['/login']);
+  }
 };

@@ -4,7 +4,6 @@ import { catchError, map, Observable, of, pipe, tap } from 'rxjs';
 import { LoginResponse, RegisterResponse, Token, User, UserResponse } from '../../shared/interfaces/auth';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
-import { ValidationErrors } from '@angular/forms';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +17,7 @@ export class AuthService {
   private _photo: string = '';
   private isLoggedSignal = signal<boolean>(false);
   private router: Router = inject(Router);
+  public redirectUrl: string | null = null;
 
   constructor() {
     let username = localStorage.getItem('username');
@@ -50,8 +50,7 @@ export class AuthService {
   isLoggedF(): boolean {
     if (this.isLogged()) {
       return true;
-    }
-    else {
+    } else {
       this.router.navigateByUrl('/login');
       return false;
     }
@@ -60,7 +59,6 @@ export class AuthService {
   setUserSession(token: string) {
     const decodedToken = this.getDecodedAccessToken(token);
     if (decodedToken) {
-      console.log('Decoded token: ', decodedToken);
       this._username = decodedToken.username;
       this._role = decodedToken.role;
       localStorage.setItem('token', token);
@@ -71,28 +69,28 @@ export class AuthService {
   }
 
   login(username: string, password: string) {
-    console.log('Enviando:', { username, password });
     return this.http.post<LoginResponse>(`${this.baseUrl}/login`, { username, password })
       .pipe(
         tap({
           next: response => {
-            console.log("Se loguió");
             this.setUserSession(response.token);
-            
             this.getUserPhoto(username, response.token).subscribe({
-              next: () => console.log("Foto guardada en localStorage"),
+              next: () => {
+                const destination = this.redirectUrl ?? '/';
+                this.redirectUrl = null;
+                this.router.navigateByUrl(destination);
+              },
               error: err => console.error("Error al obtener foto:", err)
             });
           }
         })
-      )
+      );
   }
 
   getUserPhoto(username: string, token: string) {
     const headers = new HttpHeaders({
       'Authorization': token
     });
-
     return this.http.get<UserResponse>(`${this.baseUrl}/user/${username}`, { headers })
       .pipe(
         tap({
@@ -101,7 +99,7 @@ export class AuthService {
             localStorage.setItem('photo', response.photo);
           }
         })
-      )
+      );
   }
 
   get username() {
@@ -117,7 +115,6 @@ export class AuthService {
   }
 
   register(user: User): Observable<RegisterResponse> {
-    console.log(user);
     return this.http.post<any>(`${this.baseUrl}/register`, user);
   }
 
