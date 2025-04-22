@@ -17,6 +17,7 @@ export class ArticlesService {
   private articleListSignal = signal<Article[]>([]);
   private articleMainImageSignal = signal<Map<number, Image>>(new Map());
   private articleAuthorMapSignal = signal<Map<string, User>>(new Map());
+  private loadingSignal = signal<boolean>(false);
 
   constructor() { }
 
@@ -33,14 +34,22 @@ export class ArticlesService {
   }
 
   getArticles(): void {
+    this.loadingSignal.set(true);
     this.articleListSignal.set([]);
     this.loadArticles();
+  }
+
+  get loading() {
+    return this.loadingSignal;
   }
 
   loadArticles(): void {
     this.http.get<Article[]>(`${this.urlBase}/article`).subscribe({
       next: articles => {
-        if (articles.length === 0) return;
+        if (articles.length === 0) {
+          this.loadingSignal.set(false);
+          return;
+        }
         this.articleListSignal.set(articles);
 
         const imageRequests = articles.map(article =>
@@ -70,10 +79,14 @@ export class ArticlesService {
             });
             this.articleAuthorMapSignal.set(userMap);
           },
-          error: err => console.log('Error cargando imágenes o usuarios:', err)
+          error: err => console.log('Error cargando imágenes o usuarios:', err),
+          complete: () => this.loadingSignal.set(false)
         });
       },
-      error: error => console.log('Error cargando artículos:', error)
+      error: error => {
+        console.log('Error cargando artículos:', error);
+        this.loadingSignal.set(false);
+      }
     });
   }
 }
