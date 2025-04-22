@@ -129,4 +129,25 @@ export class AuthService {
     this.isLoggedSignal.set(false);
     this.router.navigateByUrl('/login');
   }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+  
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+    
+    const decoded = this.getDecodedAccessToken(token);
+    if (!decoded || !decoded.exp) return true;
+    
+    return Date.now() >= decoded.exp * 1000;
+  }
+  
+  getAuthHeaders(): HttpHeaders {
+    const token = this.getToken();
+    return new HttpHeaders({
+      'Authorization': `${token}`
+    });
+  }
 }

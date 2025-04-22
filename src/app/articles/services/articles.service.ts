@@ -15,9 +15,10 @@ export class ArticlesService {
   private urlBase: string = 'http://localhost:8080';
 
   private articleListSignal = signal<Article[]>([]);
-  private articleMainImageSignal = signal<Map<number, Image>>(new Map());
-  private articleAuthorMapSignal = signal<Map<string, User>>(new Map());
+  articleMainImageSignal = signal<Map<number, Image>>(new Map());
+  articleAuthorMapSignal = signal<Map<string, User>>(new Map());
   private loadingSignal = signal<boolean>(false);
+  singleArticleSignal = signal<Article | null>(null);
 
   constructor() { }
 
@@ -41,6 +42,10 @@ export class ArticlesService {
 
   get loading() {
     return this.loadingSignal;
+  }
+
+  get article() {
+    return this.singleArticleSignal();
   }
 
   loadArticles(): void {
@@ -85,6 +90,39 @@ export class ArticlesService {
       },
       error: error => {
         console.log('Error cargando artículos:', error);
+        this.loadingSignal.set(false);
+      }
+    });
+  }
+
+  getArticleById(articleId: number): void {
+    this.loadingSignal.set(true);
+    
+    this.http.get<Article>(`${this.urlBase}/article/${articleId}`).subscribe({
+      next: article => {
+        this.singleArticleSignal.set(article);
+        
+        forkJoin([
+          this.http.get<Image[]>(`${this.urlBase}/images/${article.id}`),
+          this.http.get<User>(`${this.urlBase}/user/${article.username}`)
+        ]).subscribe({
+          next: ([images, user]) => {
+            const imageMap = new Map<number, Image>();
+            if (images.length > 0) {
+              imageMap.set(article.id, images.sort((a, b) => a.id - b.id)[0]);
+            }
+            this.articleMainImageSignal.set(imageMap);
+  
+            const userMap = new Map<string, User>();
+            userMap.set(article.username, user);
+            this.articleAuthorMapSignal.set(userMap);
+          },
+          error: err => console.error(`Error cargando recursos para artículo ${articleId}:`, err),
+          complete: () => this.loadingSignal.set(false)
+        });
+      },
+      error: err => {
+        console.error(`Error cargando artículo ${articleId}:`, err);
         this.loadingSignal.set(false);
       }
     });
