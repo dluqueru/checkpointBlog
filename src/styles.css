@@ -196,11 +196,11 @@ select option:hover {
     }
   }
   
-  .heart-animate {
-    animation: heartBeat 0.6s ease-in-out;
-    transform-origin: center;
-  }
-  
-  .heart-icon {
-    transition: fill 0.3s ease;
-  }
+.heart-animate {
+animation: heartBeat 0.6s ease-in-out;
+transform-origin: center;
+}
+
+.heart-icon {
+transition: fill 0.3s ease;
+}

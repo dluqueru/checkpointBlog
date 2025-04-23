@@ -1,110 +1,97 @@
-<header class="navigator bg-white dark:bg-gray-800 shadow-lg">
-    <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div class="hidden md:flex space-x-6">
-            <a routerLink="/" class="text-2xl font-bold text-indigo-800 dark:text-white transition-colors duration-300">
-                <img class="w-[70px]" src="assets/images/logo.png" alt="logo">
-            </a>
-            <a routerLink="/" class="text-2xl font-bold text-indigo-800 dark:text-white transition-colors duration-300">
-                <img class="h-[30px] mt-3" src="assets/images/letrasLogo.png" alt="letrasLogo">
+
+<header class="navigator bg-gray-900 sticky top-0 z-50 
+              shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4)]
+              transition-shadow duration-300">
+    <nav class="container mx-auto px-4 py-3 md:py-2 flex justify-between items-center">
+
+        <div class="md:hidden absolute left-1/2 transform -translate-x-1/2">
+            <a routerLink="/" (click)="closeMobileMenu()" class="text-2xl font-bold text-white">
+                <img class="w-[50px]" src="assets/images/logo.png" alt="logo">
             </a>
         </div>
-        <div class="hidden md:flex space-x-6">
-            <a routerLink="/" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">Home</a>
-            <a href="#" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">About</a>
-            <a href="#" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">History</a>
-            @if (!this.authService.isLogged()) {
-                <a routerLink="/register" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">Register</a>
-            }
-        </div>
-        @if (this.authService.isLogged()) {
-            <img 
-            [src]="authService.photo"
-            [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
-            alt="Foto de perfil"
-            class="w-12 h-12 object-cover rounded-full border-2 border-gray-300 dark:border-gray-600 hover:cursor-pointer"
-            />
-            <a href="#" class="nav-link text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">
-                {{authService.username}}
-                Role: {{authService.role }}
-            </a>
-            <div class="hidden md:flex items-center space-x-4">
-                <button id="darkModeToggle" class="text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white focus:outline-none transition-colors duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                </button>
-                <a (click)="logout()" class="btn-danger bg-teal-700 text-white px-4 py-2 rounded-lg hover:bg-teal-800 cursor-pointer transition-colors duration-300">Logout</a>
-            </div>
-        } @else {
-            <div class="hidden md:flex items-center space-x-4">
-                <button id="darkModeToggle" class="text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white focus:outline-none transition-colors duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                </button>
-                <a routerLink="/login" class="btn-primary bg-teal-700 text-white px-4 py-2 rounded-lg hover:bg-teal-800 transition-colors duration-300">Login</a>
-            </div>
-        }
-        <button id="mobileMenuButton" class="md:hidden text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white focus:outline-none transition-colors duration-300">
+
+        <button id="mobileMenuButton" 
+                class="md:hidden text-gray-300 hover:text-white focus:outline-none order-first">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
         </button>
-    </nav>
-    <div id="mobileMenu" class="mobile-menu md:hidden bg-white dark:bg-gray-800 shadow-lg absolute w-full left-0 transform -translate-y-full opacity-0">
-        <div class="container mx-auto px-4 py-4 space-y-4">
-            <a href="#" class="block text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">Home</a>
-            <a href="#" class="block text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">About</a>
-            <a href="#" class="block text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">History</a>
-            <a href="#" class="block text-gray-700 dark:text-gray-200 hover:text-indigo-800 dark:hover:text-white transition-colors duration-300">Register</a>
-            <a href="#" class="primary-button inline-block text-white px-4 py-2 rounded-lg hover:bg-blue-900 transition-colors duration-300">Login</a>
+
+        <div class="hidden md:flex space-x-6 order-first">
+            <a routerLink="/" class="text-2xl font-bold text-white">
+                <img class="w-[70px]" src="assets/images/logo.png" alt="logo">
+            </a>
+            <a routerLink="/" class="text-2xl font-bold text-white">
+                <img class="h-[30px] mt-3" src="assets/images/letrasLogo.png" alt="letrasLogo">
+            </a>
         </div>
-        <img class="w-[70px]" src="assets/images/logo.png" alt="logo">
+
+        <div class="hidden md:flex space-x-6 mx-auto">
+            <a routerLink="/" class="nav-link text-gray-300 hover:text-white px-3 py-1">Inicio</a>
+            <a href="#" class="nav-link text-gray-300 hover:text-white px-3 py-1">Historial</a>
+            @if (!authService.isLogged() && !isLoginRoute()) {
+                <a routerLink="/register" class="text-gray-300 hover:text-white px-3 py-1">Registro</a>
+            }
+        </div>
+
+        @if (authService.isLogged()) {
+            <div class="flex items-center space-x-4 order-last">
+                <img 
+                    [src]="authService.photo"
+                    [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
+                    alt="Foto de perfil"
+                    class="w-10 h-10 md:w-12 md:h-12 object-cover rounded-full border-2 border-gray-300 dark:border-gray-600 hover:cursor-pointer"
+                />
+                <span class="hidden md:inline text-gray-300 hover:text-white transition-colors duration-300">
+                    {{authService.username}} ({{authService.role}})
+                </span>
+                <button (click)="logout()" 
+                        class="hidden md:block btn-danger hover:bg-teal-800 text-white px-4 py-1 rounded-lg transition-colors">
+                    Logout
+                </button>
+            </div>
+        } @else if (!isLoginRoute()) {
+            <div class="hidden md:flex items-center space-x-4 order-last">
+                <a routerLink="/login" 
+                   class="btn-primary hover:bg-teal-800 text-white px-4 py-1 rounded-lg transition-colors">
+                    Login
+                </a>
+            </div>
+        }
+
+    </nav>
+
+    <div id="mobileMenu" 
+         class="md:hidden bg-[--sidebar-gray] absolute w-full left-0 shadow-lg transition-all duration-300 overflow-hidden max-h-0">
+        <div class="container mx-auto px-4 py-2 space-y-2">
+            <a routerLink="/" 
+               (click)="closeMobileMenu()"
+               class="block text-gray-300 hover:text-white py-2 transition-colors">
+               Inicio
+            </a>
+            <a href="#" 
+               (click)="closeMobileMenu()"
+               class="block text-gray-300 hover:text-white py-2 transition-colors">
+               Historial
+            </a>
+            
+            @if (!authService.isLogged() && !isLoginRoute()) {
+                <a routerLink="/register" 
+                   (click)="closeMobileMenu()"
+                   class="block text-gray-300 hover:text-white py-2 transition-colors">
+                   Registro
+                </a>
+                <a routerLink="/login" 
+                   (click)="closeMobileMenu()"
+                   class="block btn-primary hover:bg-teal-800 text-white py-2 px-4 rounded text-center my-2 transition-colors">
+                   Login
+                </a>
+            } @else if (authService.isLogged()) {
+                <button (click)="logout()"
+                        class="block btn-danger hover:bg-teal-800 text-white py-2 px-4 rounded w-full text-center my-2 transition-colors">
+                    Logout
+                </button>
+            }
+        </div>
     </div>
 </header>
-
-<script>
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const mobileMenuButton = document.getElementById('mobileMenuButton');
-    const mobileMenu = document.getElementById('mobileMenu');
-    let isDarkMode = false;
-    let isMobileMenuOpen = false;
-
-    function toggleDarkMode() {
-        isDarkMode = !isDarkMode;
-        document.documentElement.classList.toggle('dark');
-        updateDarkModeIcon();
-    }
-
-    function updateDarkModeIcon() {
-        darkModeToggle.innerHTML = isDarkMode
-            ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>'
-            : '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>';
-    }
-
-    function toggleMobileMenu() {
-        isMobileMenuOpen = !isMobileMenuOpen;
-        if (isMobileMenuOpen) {
-            mobileMenu.classList.remove('-translate-y-full', 'opacity-0');
-            mobileMenu.classList.add('translate-y-0', 'opacity-100');
-        } else {
-            mobileMenu.classList.remove('translate-y-0', 'opacity-100');
-            mobileMenu.classList.add('-translate-y-full', 'opacity-0');
-        }
-    }
-
-    darkModeToggle.addEventListener('click', toggleDarkMode);
-    mobileMenuButton.addEventListener('click', toggleMobileMenu);
-
-    // Toggle dark mode based on system preference
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        toggleDarkMode();
-    }
-
-    // Add fade-in animation to nav links
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach((link, index) => {
-        link.classList.add('animate-fade-in');
-        link.style.animationDelay = `${index * 0.1}s`;
-    });
-</script>
