@@ -5,6 +5,7 @@ export interface Article{
     reported: boolean,
     state: string,
     publishDate: string,
+    views: number,
     username: string,
     categories: [
         {

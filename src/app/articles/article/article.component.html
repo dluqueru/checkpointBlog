@@ -4,34 +4,68 @@
             <h1 class="text-4xl font-bold text-white mb-2">{{ article()?.title }}</h1>
             <div class="flex items-center justify-center gap-x-4 text-gray-300">
                 <time datetime="2023-01-01" class="text-sm">
-                    Jan 1, 2023
+                    {{ article()?.publishDate | date:'MMM d, y' }}
                 </time>
                 <svg viewBox="0 0 2 2" class="h-0.5 w-0.5 flex-none fill-white/50">
                     <circle cx="1" cy="1" r="1"></circle>
                 </svg>
-                <div class="flex gap-x-2.5 items-center text-sm">
-                    <img src="assets/images/avatarDefaultImage.jpg"
-                            alt="Author avatar" 
-                            class="h-6 w-6 flex-none rounded-full bg-white/10">
-                    Nombre del autor
+                <div class="flex gap-x-2.5 items-center text-m">
+                    <img
+                    [src]="getAuthorAvatar(article()?.username)"
+                    alt="Avatar de autor" 
+                    class="h-6 w-6 flex-none rounded-full bg-white/10">
+                    {{ article()?.username }}
                 </div>
             </div>
-        </div>
 
-        <div class="mx-auto max-w-2xl lg:max-w-4xl">
-            <img src="assets/images/articleDefaultImage.jpg"
-                    alt="Article featured image" 
-                    class="mb-8 rounded-2xl object-cover w-full h-96">
+            <div class="flex items-center justify-center mt-3 space-x-6">
+                <button 
+                    class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
+                    (click)="toggleLike()">
+                    @if(!isLiked) {
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                            <path d="M440-501Zm0 381L313-234q-72-65-123.5-116t-85-96q-33.5-45-49-87T40-621q0-94 63-156.5T260-840q52 0 99 22t81 62q34-40 81-62t99-22q81 0 136 45.5T831-680h-85q-18-40-53-60t-73-20q-51 0-88 27.5T463-660h-46q-31-45-70.5-72.5T260-760q-57 0-98.5 39.5T120-621q0 33 14 67t50 78.5q36 44.5 98 104T440-228q26-23 61-53t56-50l9 9 19.5 19.5L605-283l9 9q-22 20-56 49.5T498-172l-58 52Zm280-160v-120H600v-80h120v-120h80v120h120v80H800v120h-80Z"/>
+                        </svg>
+                    } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                            <path d="M440-501Zm0 381L313-234q-72-65-123.5-116t-85-96q-33.5-45-49-87T40-621q0-94 63-156.5T260-840q52 0 99 22t81 62q34-40 81-62t99-22q84 0 153 59t69 160q0 14-2 29.5t-6 31.5h-85q5-18 8-34t3-30q0-75-50-105.5T620-760q-51 0-88 27.5T463-660h-46q-31-45-70.5-72.5T260-760q-57 0-98.5 39.5T120-621q0 33 14 67t50 78.5q36 44.5 98 104T440-228q26-23 61-53t56-50l9 9 19.5 19.5L605-283l9 9q-22 20-56 49.5T498-172l-58 52Zm160-280v-80h320v80H600Z"/>
+                        </svg>
+                    }
+                </button>
 
-            <div class="prose prose-invert max-w-none">
-                <p>Contenido del artículo aquí...</p>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Sed sit amet feugiat
-                    eros, eget eleifend dolor. Proin maximus bibendum felis, id fermentum odio vestibulum id. Sed ac
-                    ligula eget dolor consequat tincidunt.</p>
-                <p>Nullam fringilla ipsum et ex lacinia, at bibendum elit
-                    posuere. Aliquam eget leo nec nibh mollis consectetur.</p>
+                <button class="navigator flex items-center border border-gray-300 shadow p-2 rounded-lg hover:cursor-default">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
+                         class="heart-icon"
+                         [class.heart-animate]="isLiked"
+                         [attr.fill]="isLiked ? '#6A0DAD' : '#e8eaed'">
+                        @if(!isLiked) {
+                            <path d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Zm0-108q96-86 158-147.5t98-107q36-45.5 50-81t14-70.5q0-60-40-100t-100-40q-47 0-87 26.5T518-680h-76q-15-41-55-67.5T300-774q-60 0-100 40t-40 100q0 35 14 70.5t50 81q36 45.5 98 107T480-228Zm0-273Z"/>
+                        } @else {
+                            <path d="M480-120l-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Z"/>
+                        }
+                    </svg>
+                    <span class="ml-2 text-sm text-gray-300">{{ likes }} Likes</span>
+                </button>
+
+                <button class="navigator flex items-center border border-gray-300 shadow p-2 rounded-lg hover:cursor-default">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                        <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z"/>
+                    </svg>
+                    <span class="ml-2 text-sm text-gray-300">{{ article()?.views }} Views</span>
+                </button>
             </div>
         </div>
+
+        <img
+            [src]="getImageForArticle(article()?.id)"
+            alt="Imagen de cabecera del artículo" 
+            class="mb-8 rounded-2xl object-cover w-full h-96">
+        <div class="mx-auto max-w-2xl lg:max-w-4xl">
+        
+            <div class="bg-white/5 p-6 rounded-2xl shadow-lg text-white text-lg leading-relaxed text-justify space-y-4">
+                <div [innerHTML]="(article()?.body ?? '') | formatParagraphs"></div>
+            </div>
+        </div>        
     </div>
-    <app-sidebar class="sticky top-0 h-screen border-l border-[--accent-silver] w-78"></app-sidebar>
+    <app-sidebar class="sticky top-0 h-screen border-l border-[--accent-silver] w-78 rounded-l-lg"></app-sidebar>
 </div>
