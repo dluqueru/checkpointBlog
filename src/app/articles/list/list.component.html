@@ -16,7 +16,7 @@
         </div>
         
         <div class="mx-auto max-w-2xl text-center">
-            <button class="text-gray-600 hover:text-gray-800 mx-2 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500">
+            <button title="Escribir artículo" class="text-gray-600 hover:text-gray-800 mx-2 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500">
                 <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
                 </svg>
@@ -59,8 +59,10 @@
                                             [src]="getAuthorAvatar(article.username)"
                                             [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
                                             alt="Avatar de autor" 
-                                            class="h-6 w-6 flex-none rounded-full bg-white/10">
-                                            {{ article.username }}
+                                            class="h-8 w-8 flex-none object-cover rounded-full bg-white/10">
+                                            <span class="mt-1">
+                                                {{ article.username }}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
