@@ -1,29 +1,65 @@
 <div class="flex relative">
     <div class="flex-1 mx-auto max-w-7xl px-6 lg:px-8 pt-8 overflow-hidden">
-        <div class="mx-auto max-w-2xl text-center mb-4">
-            <label for="categorySelect" class="block text-white text-sm mb-2">Filtrar por categoría:</label>
-            <select id="categorySelect" 
-                    [(ngModel)]="selectedCategoryId" 
-                    (change)="onCategorySelected()"
-                    class="rounded-md border border-[--accent-silver] px-3 py-2 text-sm bg-[--sidebar-gray] text-white">
-                <option [ngValue]="null">
-                    -- Todas las categorías --
-                </option>
-                <option *ngFor="let cat of categories" [ngValue]="cat.id" class="category-option">
-                    {{ cat.name }}
-                </option>
-            </select>
-        </div>
-        
-        <div class="mx-auto max-w-2xl text-center">
-            <button title="Escribir artículo" class="text-gray-600 hover:text-gray-800 mx-2 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500">
-                <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
-                </svg>
-            </button>
+        <div class="mx-auto max-w-2xl mb-4">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-end">
+                <div class="w-full sm:w-auto">
+                    <label for="categorySelect" class="block text-white text-sm mb-2">Filtrar por categoría:</label>
+                    <select id="categorySelect" 
+                            [(ngModel)]="selectedCategoryId" 
+                            (change)="onCategorySelected()"
+                            class="w-full rounded-md border border-[--accent-silver] px-3 py-2 text-sm bg-[--sidebar-gray] text-white">
+                        <option [ngValue]="null">-- Todas las categorías --</option>
+                        @for (cat of categories; track cat.id) {
+                            <option [ngValue]="cat.id">{{ cat.name }}</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="w-full sm:w-auto">
+                    <label for="sortSelect" class="block text-white text-sm mb-2">Ordenar por:</label>
+                    <select id="sortSelect" 
+                            [(ngModel)]="selectedSort" 
+                            (change)="onSortChange()"
+                            class="w-full rounded-md border border-[--accent-silver] px-3 py-2 text-sm bg-[--sidebar-gray] text-white">
+                        <option value="newest">Más recientes</option>
+                        <option value="oldest">Más antiguos</option>
+                        <option value="views_desc">Más vistas</option>
+                        <option value="views_asc">Menos vistas</option>
+                    </select>
+                </div>
+
+                <div class="hidden sm:block w-auto">
+                    <button (click)="clearFilters()"
+                            class="flex items-center justify-center gap-2 rounded-md border border-[--accent-silver] px-3 py-2 text-sm bg-[--sidebar-gray] text-white hover:bg-gray-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#e8eaed">
+                            <path d="M440-520h80v-280q0-17-11.5-28.5T480-840q-17 0-28.5 11.5T440-800v280ZM200-360h560v-80H200v80Zm-58 240h98v-80q0-17 11.5-28.5T280-240q17 0 28.5 11.5T320-200v80h120v-80q0-17 11.5-28.5T480-240q17 0 28.5 11.5T520-200v80h120v-80q0-17 11.5-28.5T680-240q17 0 28.5 11.5T720-200v80h98l-40-160H182l-40 160Zm676 80H142q-39 0-63-31t-14-69l55-220v-80q0-33 23.5-56.5T200-520h160v-280q0-50 35-85t85-35q50 0 85 35t35 85v280h160q33 0 56.5 23.5T840-440v80l55 220q13 38-11.5 69T818-40Zm-58-400H200h560Zm-240-80h-80 80Z"/>
+                        </svg>
+                        <span>Limpiar</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sm:hidden mt-2 flex justify-center">
+                <button (click)="clearFilters()"
+                        class="flex items-center justify-center gap-2 w-full sm:w-auto rounded-md border border-[--accent-silver] px-3 py-2 text-sm bg-[--sidebar-gray] text-white hover:bg-gray-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#e8eaed">
+                        <path d="M440-520h80v-280q0-17-11.5-28.5T480-840q-17 0-28.5 11.5T440-800v280ZM200-360h560v-80H200v80Zm-58 240h98v-80q0-17 11.5-28.5T280-240q17 0 28.5 11.5T320-200v80h120v-80q0-17 11.5-28.5T480-240q17 0 28.5 11.5T520-200v80h120v-80q0-17 11.5-28.5T680-240q17 0 28.5 11.5T720-200v80h98l-40-160H182l-40 160Zm676 80H142q-39 0-63-31t-14-69l55-220v-80q0-33 23.5-56.5T200-520h160v-280q0-50 35-85t85-35q50 0 85 35t35 85v280h160q33 0 56.5 23.5T840-440v80l55 220q13 38-11.5 69T818-40Zm-58-400H200h560Zm-240-80h-80 80Z"/>
+                    </svg>
+                    <span>Limpiar filtros</span>
+                </button>
+            </div>
+
+            <div class="mt-4 text-center">
+                <button title="Escribir artículo" 
+                        class="text-gray-600 hover:text-gray-800 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500">
+                    <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
 
-        @if(this.articlesService.loading()){
+        @if (this.articlesService.loading()) {
             <div class="absolute inset-0 flex justify-center items-center bg-black/40 backdrop-blur-sm z-50">
                 <div class="p-4 animate-[spin_0.3s_linear_infinite] bg-gradient-to-r from-teal-700 to-purple-900 rounded-full">
                     <div class="h-12 w-12 rounded-full bg-gray-900"></div>
@@ -31,8 +67,8 @@
             </div>
         } @else {
             <div class="mx-auto grid max-w-2xl auto-rows-fr grid-cols-1 gap-16 sm:mt-12 lg:mx-0 lg:max-w-none lg:grid-cols-2">
-                @if(filteredArticles.length > 0) {
-                    @for(article of filteredArticles; track article.id) {
+                @if (filteredArticles.length > 0) {
+                    @for (article of filteredArticles; track article.id) {
                         <article class="relative isolate flex flex-col justify-end overflow-hidden rounded-2xl bg-gray-900 dark:bg-gray-700 px-8 py-8 pb-8 pt-80 sm:pt-48 lg:pt-80 transition-transform duration-500 hover:scale-105 max-w-full">
                             <a routerLink="/article/{{article.id}}">
                                 <img
@@ -40,11 +76,12 @@
                                     [appDefaultImage]="'assets/images/articleDefaultImage.jpg'"
                                     alt="Imagen de artículo"
                                     class="absolute inset-0 -z-10 h-full w-full object-cover">
-                                <div class="absolute inset-0 -z-10 bg-gradient-to-t from-gray-900 via-gray-900/40"></div>
+                                <div class="absolute inset-0 -z-10 bg-gradient-to-t from-purple-900/40 via-purple-900/10 to-transparent"></div>
                                 <div class="absolute inset-0 -z-10 rounded-2xl ring-1 ring-inset ring-gray-900/10 max-w-full"></div>
+                                
                                 <div class="flex flex-wrap items-center gap-y-1 overflow-hidden text-sm leading-6 text-gray-300">
                                     <time [attr.datetime]="article.publishDate" class="mr-8">
-                                        @if(article.publishDate == null) {
+                                        @if (article.publishDate == null) {
                                             UNPUBLISHED
                                         } @else {
                                             {{ article.publishDate | date:'MMM d, y' }}
@@ -56,16 +93,17 @@
                                         </svg>
                                         <div class="flex gap-x-2.5">
                                             <img
-                                            [src]="getAuthorAvatar(article.username)"
-                                            [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
-                                            alt="Avatar de autor" 
-                                            class="h-8 w-8 flex-none object-cover rounded-full bg-white/10">
+                                                [src]="getAuthorAvatar(article.username)"
+                                                [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
+                                                alt="Avatar de autor" 
+                                                class="h-8 w-8 flex-none object-cover rounded-full bg-white/10">
                                             <span class="mt-1">
                                                 {{ article.username }}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
+                                
                                 <h3 class="mt-3 text-2xl font-semibold leading-6 text-white">
                                     <a><span class="absolute inset-0"></span>{{ article.title }}</a>
                                 </h3>
@@ -73,11 +111,10 @@
                         </article>
                     }
                 } @else {
-                    <h1>No se encontraron artículos para esta categoría.</h1>
+                    <h1 class="text-white text-center col-span-2">No se encontraron artículos para esta categoría.</h1>
                 }
             </div>
         }
-
     </div>
     <app-sidebar class="sticky top-0 h-screen border-l border-[--accent-silver] w-78"></app-sidebar>
 </div>

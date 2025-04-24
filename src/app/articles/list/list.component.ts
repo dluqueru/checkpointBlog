@@ -20,6 +20,7 @@ export class ListComponent {
 
   categories: { id: number, name: string }[] = [];
   selectedCategoryId: number | null = null;
+  selectedSort: string = 'newest';
 
   ngOnInit(): void {
     this.loadCategories();
@@ -37,6 +38,9 @@ export class ListComponent {
     this.articlesService.getArticles();
   }
 
+  onSortChange(): void {
+  }
+
   getImageForArticle(articleId: number): string | undefined {
     const map = this.imagesMap();
     return map.get(articleId)?.imageUrl;
@@ -48,12 +52,35 @@ export class ListComponent {
   }
 
   get filteredArticles() {
-    if (this.selectedCategoryId === null) {
-      return this.articlesService.articles();
+    let articles = this.articlesService.articles();
+
+    if (this.selectedCategoryId !== null) {
+      articles = articles.filter(article =>
+        article.categories.some(category => category.categoryId === this.selectedCategoryId)
+      );
     }
 
-    return this.articlesService.articles().filter(article =>
-      article.categories.some(category => category.categoryId === this.selectedCategoryId)
-    );
+    switch (this.selectedSort) {
+      case 'oldest':
+        return [...articles].sort((a, b) => 
+          new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime()
+        );
+      case 'views_asc':
+        return [...articles].sort((a, b) => (a.views || 0) - (b.views || 0));
+      case 'views_desc':
+        return [...articles].sort((a, b) => (b.views || 0) - (a.views || 0));
+      case 'newest':
+      default:
+        return [...articles].sort((a, b) => 
+          new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
+        );
+    }
+  }
+
+  clearFilters() {
+    this.selectedCategoryId = null;
+    this.selectedSort = 'newest';
+    this.onCategorySelected();
+    this.onSortChange();
   }
 }
