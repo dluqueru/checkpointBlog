@@ -10,7 +10,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = authService.getToken();
 
   if (token && !authService.isTokenExpired()) {
-    console.log("Interceptor mandando token en la cabecera");
     req = req.clone({
       setHeaders: {
         Authorization: `${token}`
@@ -21,7 +20,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 || error.status === 403) {
-        console.log("Interceptor no encontró el token o el token expiró");
+        console.error("Interceptor no encontró el token o el token expiró");
         authService.logout();
         router.navigate(['/login'], {
           queryParams: { returnUrl: router.url }

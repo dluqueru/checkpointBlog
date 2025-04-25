@@ -28,7 +28,7 @@
         <div class="hidden md:flex space-x-6 mx-auto">
             <a routerLink="/" class="nav-link text-gray-300 hover:text-white px-3 py-1">Inicio</a>
             <a href="#" class="nav-link text-gray-300 hover:text-white px-3 py-1">Historial</a>
-            @if (!authService.isLogged() && !isLoginRoute()) {
+            @if (!authService.isLogged()) {
                 <a routerLink="/register" class="text-gray-300 hover:text-white px-3 py-1">Registro</a>
             }
         </div>
