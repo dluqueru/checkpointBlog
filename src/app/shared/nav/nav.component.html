@@ -92,13 +92,12 @@
                class="block text-gray-300 hover:text-white py-2 transition-colors">
                Historial
             </a>
-            
+            <a routerLink="/register" 
+               (click)="closeMobileMenu()"
+               class="block text-gray-300 hover:text-white py-2 transition-colors">
+               Registro
+            </a>
             @if (!authService.isLogged() && !isLoginRoute()) {
-                <a routerLink="/register" 
-                   (click)="closeMobileMenu()"
-                   class="block text-gray-300 hover:text-white py-2 transition-colors">
-                   Registro
-                </a>
                 <a routerLink="/login" 
                    (click)="closeMobileMenu()"
                    class="block btn-primary hover:bg-teal-800 text-white py-2 px-4 rounded text-center my-2 transition-colors">

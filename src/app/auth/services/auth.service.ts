@@ -48,12 +48,7 @@ export class AuthService {
   }
 
   isLoggedF(): boolean {
-    if (this.isLogged()) {
-      return true;
-    } else {
-      this.router.navigateByUrl('/login');
-      return false;
-    }
+    return this.isLogged();
   }
 
   setUserSession(token: string) {
@@ -143,11 +138,18 @@ export class AuthService {
     
     return Date.now() >= decoded.exp * 1000;
   }
+
+  checkUsernameExists(username: string): Observable<boolean> {
+    return this.http.get<User>(`${this.baseUrl}/user/${username}`).pipe(
+      map(() => true),
+      catchError(error => error.status === 404 ? of(false) : of(false))
+    );
+  }
   
-  getAuthHeaders(): HttpHeaders {
-    const token = this.getToken();
-    return new HttpHeaders({
-      'Authorization': `${token}`
-    });
+  checkEmailExists(email: string): Observable<boolean> {
+    return this.http.get<User[]>(`${this.baseUrl}/user`).pipe(
+      map(users => users.some(user => user.email === email)),
+      catchError(() => of(false))
+    );
   }
 }

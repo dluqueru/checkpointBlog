@@ -9,6 +9,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const token = authService.getToken();
 
+  if (req.url.includes('/user/')) {
+    return next(req);
+  }
+
   if (token && !authService.isTokenExpired()) {
     req = req.clone({
       setHeaders: {
@@ -19,16 +23,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 || error.status === 403) {
-        console.error("Interceptor no encontró el token o el token expiró");
+      if ((error.status === 401 || error.status === 403) && 
+          !error.url?.includes('/user/')) {
+        console.error("Interceptor: Token inválido o expirado");
         authService.logout();
         router.navigate(['/login'], {
           queryParams: { returnUrl: router.url }
         });
-      } else {
-        console.error('Error no autorizado:', error);
       }
-
       return throwError(() => error);
     })
   );

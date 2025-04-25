@@ -1,10 +1,18 @@
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivate, Router } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
-import { inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 
-export const redirectIfLoggedGuard: CanActivateFn = (route, state) => {
-  const authService: AuthService = inject(AuthService);
-  const router = inject(Router);
+@Injectable({
+  providedIn: 'root'
+})
+export class redirectIfLoggedGuard implements CanActivate {
+  constructor(private authService: AuthService, private router: Router) {}
 
-  return authService.isLogged() ? router.createUrlTree(['/']) : true;
-};
+  canActivate(): boolean {
+    if (this.authService.isLoggedF()) {
+      this.router.navigate(['/']);
+      return false;
+    }
+    return true;
+  }
+}
