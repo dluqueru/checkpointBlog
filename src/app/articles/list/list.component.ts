@@ -1,4 +1,4 @@
-import { Component, inject, NgModule } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
 import { ArticlesService } from '../services/articles.service';
 import { CategoriesService } from '../services/categories.service';
@@ -13,14 +13,13 @@ import { RouterLink } from '@angular/router';
   templateUrl: './list.component.html'
 })
 export class ListComponent {
-
-  articlesService: ArticlesService = inject(ArticlesService);
-  categoriesService: CategoriesService = inject(CategoriesService);
-  imagesMap = this.articlesService.articleMainImages;
+  articlesService = inject(ArticlesService);
+  categoriesService = inject(CategoriesService);
+  imagesMap = this.articlesService.articleImages;
 
   categories: { id: number, name: string }[] = [];
   selectedCategoryId: number | null = null;
-  selectedSort: string = 'newest';
+  selectedSort = 'newest';
 
   ngOnInit(): void {
     this.loadCategories();
@@ -41,9 +40,9 @@ export class ListComponent {
   onSortChange(): void {
   }
 
-  getImageForArticle(articleId: number): string | undefined {
-    const map = this.imagesMap();
-    return map.get(articleId)?.imageUrl;
+  getMainImageForArticle(articleId: number): string | undefined {
+    const images = this.imagesMap().get(articleId);
+    return images?.[0]?.imageUrl;
   }
 
   getAuthorAvatar(username: string): string | undefined {
@@ -63,8 +62,7 @@ export class ListComponent {
     switch (this.selectedSort) {
       case 'oldest':
         return [...articles].sort((a, b) => 
-          new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime()
-        );
+          new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime());
       case 'views_asc':
         return [...articles].sort((a, b) => (a.views || 0) - (b.views || 0));
       case 'views_desc':
@@ -72,8 +70,7 @@ export class ListComponent {
       case 'newest':
       default:
         return [...articles].sort((a, b) => 
-          new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
-        );
+          new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
     }
   }
 
@@ -81,6 +78,5 @@ export class ListComponent {
     this.selectedCategoryId = null;
     this.selectedSort = 'newest';
     this.onCategorySelected();
-    this.onSortChange();
   }
 }

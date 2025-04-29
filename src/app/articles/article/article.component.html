@@ -1,9 +1,16 @@
 <div class="flex relative">
+    @if (loading()) {
+        <div class="absolute inset-0 flex justify-center items-center bg-black/40 backdrop-blur-sm z-50">
+            <div class="p-4 animate-[spin_0.3s_linear_infinite] bg-gradient-to-r from-teal-700 to-purple-900 rounded-full">
+                <div class="h-12 w-12 rounded-full bg-gray-900"></div>
+            </div>
+        </div>
+    }
     <div class="flex-1 mx-auto max-w-7xl px-6 lg:px-8 pt-8 overflow-hidden">
         <div class="mx-auto max-w-2xl text-center mb-4">
             <h1 class="text-4xl font-bold text-white mb-2">{{ article()?.title }}</h1>
             <div class="flex items-center justify-center gap-x-4 text-gray-300">
-                <time datetime="2023-01-01" class="text-sm">
+                <time [attr.datetime]="article()?.publishDate" class="text-sm">
                     {{ article()?.publishDate | date:'MMM d, y' }}
                 </time>
                 <svg viewBox="0 0 2 2" class="h-0.5 w-0.5 flex-none fill-white/50">
@@ -11,9 +18,9 @@
                 </svg>
                 <div class="flex gap-x-2.5 items-center text-m">
                     <img
-                    [src]="getAuthorAvatar(article()?.username)"
-                    alt="Avatar de autor" 
-                    class="h-10 w-10 flex-none object-cover rounded-full bg-white/10">
+                        [src]="getAuthorAvatar(article()?.username)"
+                        alt="Avatar de autor" 
+                        class="h-10 w-10 flex-none object-cover rounded-full bg-white/10">
                     {{ article()?.username }}
                 </div>
             </div>
@@ -28,7 +35,7 @@
                         </svg>
                     } @else {
                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-                            <path d="M440-501Zm0 381L313-234q-72-65-123.5-116t-85-96q-33.5-45-49-87T40-621q0-94 63-156.5T260-840q52 0 99 22t81 62q34-40 81-62t99-22q84 0 153 59t69 160q0 14-2 29.5t-6 31.5h-85q5-18 8-34t3-30q0-75-50-105.5T620-760q-51 0-88 27.5T463-660h-46q-31-45-70.5-72.5T260-760q-57 0-98.5 39.5T120-621q0 33 14 67t50 78.5q36 44.5 98 104T440-228q26-23 61-53t56-50l9 9 19.5 19.5L605-283l9 9q-22 20-56 49.5T498-172l-58 52Zm160-280v-80h320v80H600Z"/>
+                            <path d="M440-501Zm0 381L313-234q-72-65-123.5-116t-85-96q-33.5-45-49-87T40-621q0-94 63-156.5T260-840q52 0 99 22t81 62q34-40 81-62t99-22q84 0 153 59t69 160q0 14-2 29.5t-6 31.5h-85q5-18 8-34t3-30q0-75-50-105.5T620-760q-51 0-88 27.5T463-660h-46q-31-45-70.5-72.5T260-760q-57 0-98.5 39.5T120-621q0 33 14 67t50 78.5q36 44.5 98 107T440-228q26-23 61-53t56-50l9 9 19.5 19.5L605-283l9 9q-22 20-56 49.5T498-172l-58 52Zm160-280v-80h320v80H600Z"/>
                         </svg>
                     }
                 </button>
@@ -56,16 +63,54 @@
             </div>
         </div>
 
-        <img
-            [src]="getImageForArticle(article()?.id)"
-            alt="Imagen de cabecera del artículo" 
-            class="mb-8 rounded-2xl object-cover w-full h-96">
+        <div class="relative mb-8 rounded-2xl overflow-hidden bg-gray-800">
+            <img
+                [src]="getCurrentImage()"
+                alt="Imagen del artículo"
+                class="w-full h-96 object-cover"
+                [appDefaultImage]="'assets/images/articleDefaultImage.jpg'">
+            
+            @if (imagesLoaded && getImageCount() > 1) {
+                <div class="absolute inset-0 flex items-center justify-between p-4 opacity-0 hover:opacity-100 transition-opacity">
+                    <button 
+                        type="button"
+                        aria-label="Imagen anterior"
+                        (click)="prevImage()" 
+                        class="p-2 rounded-full bg-black/50 hover:bg-black/75">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <button 
+                        type="button"
+                        aria-label="Imagen siguiente"
+                        (click)="nextImage()" 
+                        class="p-2 rounded-full bg-black/50 hover:bg-black/75">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                    @for (img of articleImages().get(articleId); track img.id; let i = $index) {
+                        <button 
+                            type="button"
+                            (click)="currentImageIndex = i"
+                            class="w-3 h-3 rounded-full transition-all duration-200"
+                            [class.bg-white]="currentImageIndex === i"
+                            [class.bg-[--background-gray]]="currentImageIndex !== i">
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+
         <div class="mx-auto max-w-2xl lg:max-w-4xl">
-        
             <div class="bg-white/5 p-6 rounded-2xl shadow-lg text-white text-lg leading-relaxed text-justify space-y-4">
                 <div [innerHTML]="(article()?.body ?? '') | formatParagraphs"></div>
             </div>
-        </div>        
+        </div>     
     </div>
     <app-sidebar class="sticky top-0 h-screen border-l border-[--accent-silver] w-78 rounded-l-lg"></app-sidebar>
 </div>
