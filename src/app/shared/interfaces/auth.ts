@@ -7,7 +7,8 @@ export interface User{
     name: string,
     email: string,
     photo: string,
-    password: string
+    password: string,
+    imagePublicId?: string;
 }
 
 export interface UserResponse{
@@ -22,6 +23,7 @@ export interface RegisterResponse{
     username: string,
     name: string,
     email: string,
+    photo?: string,
     role: string
 }
 

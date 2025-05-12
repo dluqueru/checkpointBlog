@@ -8,7 +8,7 @@
         <p class="mb-1 dark:text-gray-200 text-sm lg:text-base">
           Regístrate
         </p>
-        <form (ngSubmit)="submit()" #myForm="ngForm" method="post" class="space-y-2">
+        <form (ngSubmit)="submit()" #myForm="ngForm" method="post" class="space-y-2" enctype="multipart/form-data">
           <div>
             <label for="username" class="mb-1 dark:text-gray-400 text-sm lg:text-base">Username</label>
             <input
@@ -17,21 +17,28 @@
               [(ngModel)]="user.username"
               #username="ngModel"
               (blur)="user.username ? checkUsername(user.username) : null"
-              (blur)="checkUsername(user.username)"
               class="border p-2 shadow-md placeholder:text-sm focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
               type="text"
               placeholder="Username"
               required
+              minlength="3"
+              maxlength="20"
             />
             @if (username.touched && username.invalid) {
               @if (username.errors?.['required']) {
                 <p class="mt-1 text-xs text-red-700 dark:text-red-500">Introduce un username válido</p>
               }
+              @if (username.errors?.['minlength']) {
+                <p class="mt-1 text-xs text-red-700 dark:text-red-500">El username debe tener al menos 3 caracteres</p>
+              }
+              @if (username.errors?.['maxlength']) {
+                <p class="mt-1 text-xs text-red-700 dark:text-red-500">El username no puede exceder 20 caracteres</p>
+              }
               @if (username.errors?.['usernameExists']) {
                 <p class="mt-1 text-xs text-red-700 dark:text-red-500">Este nombre de usuario ya está en uso</p>
               }
             }
-            @if (username.touched && !username.invalid && usernameAvailable) {
+            @if (username.touched && !username.invalid && !usernameExists) {
               <p class="mt-1 text-xs text-green-700 dark:text-green-500">✔ Nombre de usuario disponible</p>
             }
             @if (checkingUsername) {
@@ -49,9 +56,15 @@
               type="text"
               placeholder="Nombre"
               required
+              minlength="2"
             />
             @if (name.touched && name.invalid) {
-              <p class="mt-1 text-xs text-red-700 dark:text-red-500">Introduce un nombre válido</p>
+              @if (name.errors?.['required']) {
+                <p class="mt-1 text-xs text-red-700 dark:text-red-500">Introduce un nombre válido</p>
+              }
+              @if (name.errors?.['minlength']) {
+                <p class="mt-1 text-xs text-red-700 dark:text-red-500">El nombre debe tener al menos 2 caracteres</p>
+              }
             }
           </div>
           <div>
@@ -79,7 +92,7 @@
                 <p class="mt-1 text-xs text-red-700 dark:text-red-500">Este email ya está registrado</p>
               }
             }
-            @if (email.touched && !email.invalid && emailAvailable) {
+            @if (email.touched && !email.invalid && !emailExists) {
               <p class="mt-1 text-xs text-green-700 dark:text-green-500">✔ Email disponible</p>
             }
             @if (checkingEmail) {
@@ -87,21 +100,16 @@
             }
           </div>
           <div>
-            <label for="profilePhoto" class="mb-1 dark:text-gray-400 text-sm lg:text-base">Foto de perfil (URL)</label>
+            <label for="profileImage" class="mb-1 dark:text-gray-400 text-sm lg:text-base">Foto de perfil (opcional)</label>
             <input
-              id="profilePhoto"
-              name="profilePhoto"
-              [(ngModel)]="user.photo"
-              #profilePhoto="ngModel"
-              (input)="checkImageUrl(user.photo)"
+              id="profileImage"
+              name="profileImage"
+              type="file"
+              accept="image/jpeg, image/png, image/webp"
+              (change)="onFileSelected($event)"
               class="border p-2 shadow-md placeholder:text-sm focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full"
-              type="url"
-              placeholder="https://ejemplo.com/foto.jpg"
-              pattern="https?://.+"
+              #fileInput
             />
-            @if (profilePhoto.touched && profilePhoto.invalid) {
-              <p class="mt-1 text-xs text-red-700 dark:text-red-500">Debe comenzar con http:// o https://</p>
-            }
             @if (imagePreview) {
               <div class="mt-3 flex flex-col items-start">
                 <p class="text-sm dark:text-gray-300 mb-2">Vista previa:</p>
@@ -110,7 +118,7 @@
                     [src]="imagePreview" 
                     alt="Vista previa de foto de perfil"
                     class="w-24 h-24 object-cover rounded-full border-2 border-gray-300 dark:border-gray-600"
-                    (error)="imagePreview = null"
+                    (error)="imageError()"
                   />
                   <button 
                     type="button" 
@@ -122,6 +130,9 @@
                   </button>
                 </div>
               </div>
+            }
+            @if (uploadError) {
+              <p class="mt-1 text-xs text-red-700 dark:text-red-500">{{uploadError}}</p>
             }
           </div>
           <div>
@@ -151,14 +162,22 @@
           <button
             class="btn-primary shadow mt-4 p-2 text-white rounded-lg w-full hover:scale-105 hover:from-purple-500 hover:to-blue-500 transition duration-300 ease-in-out"
             type="submit"
-            [disabled]="myForm.invalid || checkingUsername || checkingEmail"
+            [disabled]="myForm.invalid || checkingUsername || checkingEmail || isUploading"
           >
-            @if (checkingUsername || checkingEmail) {
+            @if (isUploading) {
+              <span class="flex items-center justify-center">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Procesando...
+              </span>
+            } @else if (checkingUsername || checkingEmail) {
               Validando...
             } @else {
               Registrarse
             }
-        </button>
+          </button>
         </form>
         <div class="mt-4 py-2 relative">
           <div class="absolute inset-0 flex items-center">

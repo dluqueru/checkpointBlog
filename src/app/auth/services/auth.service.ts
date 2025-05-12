@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpEventType, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, map, Observable, of, pipe, tap } from 'rxjs';
 import { LoginResponse, RegisterResponse, Token, User, UserResponse } from '../../shared/interfaces/auth';
@@ -109,8 +109,12 @@ export class AuthService {
     return this._photo;
   }
 
-  register(user: User): Observable<RegisterResponse> {
-    return this.http.post<any>(`${this.baseUrl}/register`, user);
+  register(formData: FormData): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/register`, formData, {
+        observe: 'response'
+    }).pipe(
+        map(response => response.body)
+    );
   }
 
   logout() {
@@ -151,5 +155,40 @@ export class AuthService {
       map(users => users.some(user => user.email === email)),
       catchError(() => of(false))
     );
+  }
+
+  uploadProfileImage(username: string, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return new Observable(observer => {
+      this.http.post(`${this.baseUrl}/user/${username}/profile-image`, formData, {
+        reportProgress: true,
+        observe: 'events',
+        headers: new HttpHeaders({
+          'Accept': 'application/json'
+        })
+      }).subscribe({
+        next: (event: any) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            observer.next({
+              type: 'uploadProgress',
+              loaded: event.loaded,
+              total: event.total
+            });
+          } else if (event.body) {
+            observer.next({
+              type: 'complete',
+              imageUrl: event.body.imageUrl,
+              publicId: event.body.publicId
+            });
+            observer.complete();
+          }
+        },
+        error: (error) => {
+          observer.error(error);
+        }
+      });
+    });
   }
 }

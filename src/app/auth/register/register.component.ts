@@ -1,10 +1,11 @@
 import { Component, inject, ViewChild, OnDestroy } from '@angular/core';
-import { AbstractControl, FormsModule, NgForm, ValidationErrors } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import Swal from 'sweetalert2';
 import { CommonModule } from '@angular/common';
 import { User } from '../../shared/interfaces/auth';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -17,174 +18,179 @@ export class RegisterComponent implements OnDestroy {
   private router: Router = inject(Router);
   @ViewChild('myForm') myForm!: NgForm;
   
-  user: User = {
+  user: Omit<User, 'photo' | 'imagePublicId'> = {
     username: '',
     name: '',
     email: '',
-    photo: '',
     password: ''
   };
 
+  selectedFile: File | null = null;
   imagePreview: string | null = null;
+  uploadError: string | null = null;
+  isUploading: boolean = false;
   checkingUsername = false;
   checkingEmail = false;
   usernameExists = false;
   emailExists = false;
-  usernameAvailable = false;
-  emailAvailable = false;
-  private usernameDebounceTimer: any;
-  private emailDebounceTimer: any;
+  private subs: Subscription[] = [];
 
-  checkUsername(username: string) {
-    clearTimeout(this.usernameDebounceTimer);
-    this.checkingUsername = true;
-    this.usernameAvailable = false;
-    
-    this.usernameDebounceTimer = setTimeout(() => {
-      this.authService.checkUsernameExists(username).subscribe({
-        next: exists => {
-          this.usernameExists = exists;
-          this.usernameAvailable = !exists;
-          if (exists) {
-            this.myForm.form.controls['username']?.setErrors({ usernameExists: true });
-          } else {
-            this.myForm.form.controls['username']?.updateValueAndValidity();
-          }
-        },
-        complete: () => this.checkingUsername = false
-      });
-    }, 500);
-  }
+  readonly passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?]).{8,}$/;
+  readonly emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-  checkEmail(email: string) {
-    clearTimeout(this.emailDebounceTimer);
-    this.checkingEmail = true;
-    this.emailAvailable = false;
-    
-    this.emailDebounceTimer = setTimeout(() => {
-      this.authService.checkEmailExists(email).subscribe({
-        next: exists => {
-          this.emailExists = exists;
-          this.emailAvailable = !exists;
-          if (exists) {
-            this.myForm.form.controls['email']?.setErrors({ emailExists: true });
-          } else {
-            this.myForm.form.controls['email']?.updateValueAndValidity();
-          }
-        },
-        complete: () => this.checkingEmail = false
-      });
-    }, 500);
-  }
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      const file = input.files[0];
 
-  removeImage() {
-    this.imagePreview = null;
-    this.user.photo = '';
-    if (this.myForm && this.myForm.form.controls['profilePhoto']) {
-      this.myForm.form.controls['profilePhoto'].setValue('');
-      this.myForm.form.controls['profilePhoto'].markAsUntouched();
-    }
-  }
-
-  submit() {
-    if (this.myForm.invalid || this.checkingUsername || this.checkingEmail) {
-      Swal.fire({
-        title: 'Formulario inválido',
-        text: 'Por favor completa todos los campos requeridos correctamente',
-        icon: 'error',
-        iconColor: '#d32f2f',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#008B8B',
-        background: 'rgba(44, 44, 44, 0.95)',
-        color: '#FFFFFF'
-      });
-      return;
-    }
-  
-    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?]).{8,}$/;
-    if (!passwordPattern.test(this.user.password)) {
-      Swal.fire({
-        title: 'Contraseña inválida',
-        text: 'Debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.',
-        icon: 'error',
-        iconColor: '#d32f2f',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#008B8B',
-        background: 'rgba(44, 44, 44, 0.95)',
-        color: '#FFFFFF'
-      });
-      return;
-    }
-  
-    if (this.imagePreview) {
-      this.user.photo = this.imagePreview;
-    }
-  
-    this.authService.register(this.user).subscribe({
-      next: (response) => {
-        Swal.fire({
-          title: "Registro exitoso",
-          text: "Tu cuenta ha sido creada correctamente",
-          icon: 'success',
-          iconColor: '#008B8B',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#008B8B',
-          background: 'rgba(44, 44, 44, 0.95)',
-          color: '#FFFFFF'
-        }).then(() => {
-          this.router.navigateByUrl('/login');
-        });
-      },
-      error: (error) => {
-        let errorMessage = 'Ocurrió un error durante el registro';
-        
-        if (error.status === 409) {
-          errorMessage = 'El nombre de usuario o email ya está en uso';
-        } else if (error.status === 400) {
-          errorMessage = 'Datos de registro inválidos';
-        }
-  
-        Swal.fire({
-          title: 'Error en el registro',
-          text: errorMessage,
-          icon: 'error',
-          iconColor: '#d32f2f',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#008B8B',
-          background: 'rgba(44, 44, 44, 0.95)',
-          color: '#FFFFFF'
-        });
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        this.uploadError = 'Solo se permiten imágenes JPEG, PNG o WEBP';
+        return;
       }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.uploadError = 'La imagen no debe exceder 5MB';
+        return;
+      }
+      
+      this.selectedFile = file;
+      this.uploadError = null;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeImage(): void {
+    this.selectedFile = null;
+    this.imagePreview = null;
+    this.uploadError = null;
+    const fileInput = document.getElementById('profilePhoto') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  }
+
+  checkUsername(username: string): void {
+    if (!username || username.length < 3) return;
+    
+    this.checkingUsername = true;
+    
+    const sub = this.authService.checkUsernameExists(username).subscribe({
+      next: exists => {
+        this.usernameExists = exists;
+        if (exists) {
+          this.myForm.form.controls['username']?.setErrors({ usernameExists: true });
+        }
+      },
+      complete: () => this.checkingUsername = false
+    });
+    this.subs.push(sub);
+  }
+
+  checkEmail(email: string): void {
+    if (!email) return;
+    
+    this.checkingEmail = true;
+    
+    const sub = this.authService.checkEmailExists(email).subscribe({
+      next: exists => {
+        this.emailExists = exists;
+        if (exists) {
+          this.myForm.form.controls['email']?.setErrors({ emailExists: true });
+        }
+      },
+      complete: () => this.checkingEmail = false
+    });
+    this.subs.push(sub);
+  }
+
+  submit(): void {
+    if (this.myForm.invalid) {
+      this.showError('Formulario inválido', 'Por favor completa todos los campos requeridos');
+      return;
+    }
+
+    if (this.checkingUsername || this.checkingEmail) {
+      this.showError('Validación en curso', 'Espera a que terminen las validaciones');
+      return;
+    }
+
+    if (!this.passwordPattern.test(this.user.password)) {
+      this.showError(
+        'Contraseña inválida',
+        'Debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.'
+      );
+      return;
+    }
+
+    this.isUploading = true;
+    const formData = new FormData();
+
+    formData.append('username', this.user.username);
+    formData.append('name', this.user.name);
+    formData.append('email', this.user.email);
+    formData.append('password', this.user.password);
+    
+    if (this.selectedFile) {
+        formData.append('file', this.selectedFile, this.selectedFile.name);
+    }
+
+    const registerSub = this.authService.register(formData).subscribe({
+        next: () => {
+            this.showSuccess('Registro exitoso', 'Tu cuenta ha sido creada', () => {
+                this.router.navigate(['/login']);
+            });
+        },
+        error: (error) => {
+            console.error('Error:', error);
+            this.isUploading = false;
+            const message = error.status === 409 
+                ? 'El usuario o email ya existe' 
+                : 'Error en el registro. Inténtalo de nuevo';
+            this.showError('Error', message);
+        }
+    });
+    this.subs.push(registerSub);
+  }
+
+  private showError(title: string, text: string): void {
+    Swal.fire({
+      title,
+      text,
+      icon: 'error',
+      iconColor: '#d32f2f',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#008B8B',
+      background: 'rgba(44, 44, 44, 0.95)',
+      color: '#FFFFFF'
     });
   }
 
-  checkImageUrl(url: string): void {
-    if (this.isValidImageUrl(url)) {
-      this.imagePreview = url;
-    } else {
-      this.imagePreview = null;
-    }
+  private showSuccess(title: string, text: string, callback?: () => void): void {
+    Swal.fire({
+      title,
+      text,
+      icon: 'success',
+      iconColor: '#008B8B',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#008B8B',
+      background: 'rgba(44, 44, 44, 0.95)',
+      color: '#FFFFFF'
+    }).then(() => callback?.());
   }
 
-  isValidImageUrl(url: string): boolean {
-    if (!url) return false;
-    try {
-      new URL(url);
-      return /\.(jpe?g|png|gif|bmp|webp)$/i.test(url);
-    } catch {
-      return false;
-    }
+  imageError(): void {
+    this.imagePreview = null;
+    this.uploadError = 'Error al cargar la imagen';
+    this.selectedFile = null;
+    
+    const fileInput = document.getElementById('profileImage') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   }
 
-  validatePassword(control: AbstractControl): ValidationErrors | null {
-    const password = control.value;
-    if (!password) return null;
-    const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?]).{8,}$/;
-    return pattern.test(password) ? null : { invalidPassword: true };
-  }
-
-  ngOnDestroy() {
-    clearTimeout(this.usernameDebounceTimer);
-    clearTimeout(this.emailDebounceTimer);
+  ngOnDestroy(): void {
+    this.subs.forEach(sub => sub.unsubscribe());
   }
 }
