@@ -49,6 +49,15 @@
                 </button>
             </div>
 
+            @if (searchQuery) {
+                <div class="mt-4 text-center text-white">
+                    <p>Mostrando resultados para: <strong>{{ searchQuery }}</strong></p>
+                    <button (click)="clearFilters()" class="text-[--button-turquoise] hover:text-teal-300 mt-2">
+                        Mostrar todos los artículos
+                    </button>
+                </div>
+            }
+
             <div class="mt-4 text-center">
                 <button title="Escribir artículo" 
                         class="text-gray-600 hover:text-gray-800 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500">
@@ -111,10 +120,25 @@
                         </article>
                     }
                 } @else {
-                    <h1 class="text-white text-center col-span-2">No se encontraron artículos para esta categoría.</h1>
+                    <div class="text-center py-12 col-span-2">
+                        <p class="text-gray-500 text-lg">
+                            @if (searchQuery) {
+                                No se encontraron artículos para "<strong>{{ searchQuery }}</strong>"
+                            } @else if (selectedCategoryId) {
+                                No se encontraron artículos para esta categoría.
+                            } @else {
+                                No hay artículos disponibles.
+                            }
+                        </p>
+                        @if (searchQuery || selectedCategoryId) {
+                            <button (click)="clearFilters()" 
+                                    class="mt-4 px-4 py-2 bg-[--button-turquoise] text-white rounded hover:bg-teal-500">
+                                Mostrar todos los artículos
+                            </button>
+                        }
+                    </div>
                 }
             </div>
         }
     </div>
-    <!-- <app-sidebar class="sticky top-0 h-screen border-l border-[--accent-silver] w-78"></app-sidebar> -->
 </div>

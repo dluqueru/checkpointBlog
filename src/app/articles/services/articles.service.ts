@@ -52,7 +52,7 @@ export class ArticlesService {
     });
   }
 
-  private loadImagesForArticles(articles: Article[]): Observable<Image[][]> {
+  loadImagesForArticles(articles: Article[]): Observable<Image[][]> {
     const requests = articles.map(article => 
       this.http.get<Image[]>(`${this.urlBase}/api/images/article/${article.id}`)
     );
@@ -68,7 +68,7 @@ export class ArticlesService {
     );
   }
 
-  private loadAuthorsForArticles(articles: Article[]): Observable<User[]> {
+  loadAuthorsForArticles(articles: Article[]): Observable<User[]> {
     const uniqueUsernames = [...new Set(articles.map(a => a.username))];
     const requests = uniqueUsernames.map(username => 
       this.http.get<User>(`${this.urlBase}/user/${username}`)
@@ -145,5 +145,9 @@ export class ArticlesService {
         this.articleImagesSignal.set(new Map(this.articleImagesSignal()));
       })
     );
+  }
+
+  searchArticlesByTitle(title: string): Observable<Article[]> {
+    return this.http.get<Article[]>(`${this.urlBase}/article/search?title=${encodeURIComponent(title)}`);
   }
 }

@@ -2,17 +2,21 @@ import { Component, inject, AfterViewInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
 import { DefaultImageDirective } from '../directives/default-image.directive';
+import { ArticlesService } from '../../articles/services/articles.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-nav',
   standalone: true,
-  imports: [RouterLink, DefaultImageDirective],
+  imports: [RouterLink, DefaultImageDirective, FormsModule],
   templateUrl: './nav.component.html'
 })
 export class NavComponent implements AfterViewInit {
   authService = inject(AuthService);
   router = inject(Router);
+  articlesService = inject(ArticlesService);
   isMobileMenuOpen = false;
+  searchQuery = '';
   private mobileMenu: HTMLElement | null = null;
 
   isLoginRoute(): boolean {
@@ -50,5 +54,17 @@ export class NavComponent implements AfterViewInit {
   logout() {
     this.authService.logout();
     this.closeMobileMenu();
+  }
+
+  searchArticles(event: Event) {
+    event.preventDefault();
+    if (this.searchQuery.trim()) {
+      this.router.navigate(['/'], { 
+        queryParams: { search: this.searchQuery.trim() },
+        queryParamsHandling: 'merge'
+      });
+      this.searchQuery = '';
+      this.closeMobileMenu();
+    }
   }
 }

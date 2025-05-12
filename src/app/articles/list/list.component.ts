@@ -1,29 +1,55 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
 import { ArticlesService } from '../services/articles.service';
 import { CategoriesService } from '../services/categories.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { DefaultImageDirective } from '../../shared/directives/default-image.directive';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-list',
+  standalone: true,
   imports: [DatePipe, DefaultImageDirective, CommonModule, FormsModule, RouterLink],
   templateUrl: './list.component.html'
 })
-export class ListComponent {
+export class ListComponent implements OnInit {
   articlesService = inject(ArticlesService);
   categoriesService = inject(CategoriesService);
+  route = inject(ActivatedRoute);
   imagesMap = this.articlesService.articleImages;
 
   categories: { id: number, name: string }[] = [];
   selectedCategoryId: number | null = null;
   selectedSort = 'newest';
+  searchQuery = '';
 
   ngOnInit(): void {
     this.loadCategories();
-    this.articlesService.getArticles();
+    this.setupSearchListener();
+  }
+
+  private setupSearchListener(): void {
+    this.route.queryParams.subscribe(params => {
+      this.searchQuery = params['search'] || '';
+      if (this.searchQuery) {
+        this.articlesService.searchArticlesByTitle(this.searchQuery).subscribe({
+          next: articles => {
+            this.articlesService.articles.set(articles);
+            if (articles.length > 0) {
+              forkJoin([
+                this.articlesService.loadImagesForArticles(articles),
+                this.articlesService.loadAuthorsForArticles(articles)
+              ]).subscribe();
+            }
+          },
+          error: error => console.error('Error en la búsqueda:', error)
+        });
+      } else {
+        this.articlesService.getArticles();
+      }
+    });
   }
 
   loadCategories(): void {
@@ -59,6 +85,13 @@ export class ListComponent {
       );
     }
 
+    if (this.searchQuery) {
+      const searchTerm = this.searchQuery.toLowerCase();
+      articles = articles.filter(article => 
+        article.title.toLowerCase().includes(searchTerm)
+      );
+    }
+
     switch (this.selectedSort) {
       case 'oldest':
         return [...articles].sort((a, b) => 
@@ -77,6 +110,7 @@ export class ListComponent {
   clearFilters() {
     this.selectedCategoryId = null;
     this.selectedSort = 'newest';
+    this.searchQuery = '';
     this.onCategorySelected();
   }
 }
