@@ -7,7 +7,7 @@ import { DefaultImageDirective } from '../../shared/directives/default-image.dir
 
 @Component({
   selector: 'app-article',
-  imports: [SidebarComponent, DatePipe, FormatParagraphsPipe, DefaultImageDirective],
+  imports: [DatePipe, FormatParagraphsPipe, DefaultImageDirective],
   templateUrl: './article.component.html'
 })
 export class ArticleComponent implements OnInit {

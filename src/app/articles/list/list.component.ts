@@ -9,7 +9,7 @@ import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-list',
-  imports: [SidebarComponent, DatePipe, DefaultImageDirective, CommonModule, FormsModule, RouterLink],
+  imports: [DatePipe, DefaultImageDirective, CommonModule, FormsModule, RouterLink],
   templateUrl: './list.component.html'
 })
 export class ListComponent {

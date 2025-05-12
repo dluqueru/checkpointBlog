@@ -25,12 +25,30 @@
             </a>
         </div>
 
-        <div class="hidden md:flex space-x-6 mx-auto">
+        <div class="hidden md:flex space-x-8 mx-auto">
             <a routerLink="/" class="nav-link text-gray-300 hover:text-white px-3 py-1">Inicio</a>
             <a href="#" class="nav-link text-gray-300 hover:text-white px-3 py-1">Historial</a>
             @if (!authService.isLogged()) {
                 <a routerLink="/register" class="text-gray-300 hover:text-white px-3 py-1">Registro</a>
             }
+        </div>
+
+        <div class="items-center pr-12">
+            <form action="/search" class="max-w-[480px] w-full px-4">
+                <div class="relative">
+                    <input type="text" name="q" class="w-full border border-[--accent-silver] h-12 shadow p-4 rounded-full bg-[--sidebar-gray] text-white placeholder-white focus:bg-[--accent-silver] focus:text-black focus:placeholder-black focus:outline-none [&:not(:placeholder-shown)]:bg-[--accent-silver] [&:not(:placeholder-shown)]:text-black" placeholder="Buscar...">
+                    <button type="submit">
+                        <svg class="text-teal-400 h-5 w-5 absolute top-3.5 right-3 fill-[--button-turquoise] dark:text-teal-300 group-focus-within:fill-black"
+                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+                            x="0px" y="0px" viewBox="0 0 56.966 56.966"
+                            style="enable-background:new 0 0 56.966 56.966;" xml:space="preserve">
+                            <path
+                                d="M55.146,51.887L41.588,37.786c3.486-4.144,5.396-9.358,5.396-14.786c0-12.682-10.318-23-23-23s-23,10.318-23,23  s10.318,23,23,23c4.761,0,9.298-1.436,13.177-4.162l13.661,14.208c0.571,0.593,1.339,0.92,2.162,0.92  c0.779,0,1.518-0.297,2.079-0.837C56.255,54.982,56.293,53.08,55.146,51.887z M23.984,6c9.374,0,17,7.626,17,17s-7.626,17-17,17  s-17-7.626-17-17S14.61,6,23.984,6z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
         </div>
 
         @if (authService.isLogged()) {
@@ -39,7 +57,7 @@
                     [src]="authService.photo"
                     [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
                     alt="Foto de perfil"
-                    class="w-10 h-10 md:w-12 md:h-12 object-cover rounded-full border-2 border-gray-300 dark:border-gray-600 hover:cursor-pointer"
+                    class="w-10 h-10 md:w-12 md:h-12 object-cover rounded-full border-2 border-[--accent-silver] dark:border-gray-600 hover:cursor-pointer"
                 />
                 <span class="hidden md:inline text-gray-300 hover:text-white transition-colors duration-300 hover:cursor-pointer">
                     {{authService.username}} 
