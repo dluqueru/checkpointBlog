@@ -1,9 +1,9 @@
 import { Component, Input, OnInit, inject, effect } from '@angular/core';
-import { SidebarComponent } from "../../shared/sidebar/sidebar.component";
 import { ArticlesService } from '../services/articles.service';
 import { DatePipe } from '@angular/common';
 import { FormatParagraphsPipe } from '../../format-paragraphs.pipe';
 import { DefaultImageDirective } from '../../shared/directives/default-image.directive';
+import { LikeService } from '../services/like.service';
 
 @Component({
   selector: 'app-article',
@@ -13,6 +13,7 @@ import { DefaultImageDirective } from '../../shared/directives/default-image.dir
 export class ArticleComponent implements OnInit {
   @Input() articleId!: number;
   private articlesService = inject(ArticlesService);
+  private likeService = inject(LikeService);
   
   article = this.articlesService.singleArticleSignal;
   articleImages = this.articlesService.articleImagesSignal;
@@ -26,17 +27,15 @@ export class ArticleComponent implements OnInit {
 
   constructor() {
     effect(() => {
-        const images = this.articleImages().get(this.articleId);
-        this.imagesLoaded = !!images && images.length > 0;
-        if (this.imagesLoaded) {
-            console.log('Imágenes cargadas:', images);
-        }
+      const images = this.articleImages().get(this.articleId);
+      this.imagesLoaded = !!images && images.length > 0;
     });
   }
 
   ngOnInit(): void {
     if (this.articleId) {
       this.loadArticleData();
+      this.loadLikeData();
     } else {
       console.warn('No se ha recibido articleId para cargar el artículo.');
     }
@@ -44,6 +43,40 @@ export class ArticleComponent implements OnInit {
 
   private loadArticleData(): void {
     this.articlesService.getArticleById(this.articleId);
+  }
+
+  private loadLikeData(): void {
+    this.likeService.hasUserLiked(this.articleId).subscribe(hasLiked => {
+      this.isLiked = hasLiked;
+    });
+
+    this.likeService.getLikeCount(this.articleId).subscribe(count => {
+      this.likes = count;
+    });
+  }
+
+  toggleLike(): void {
+    this.likeService.toggleLike(this.articleId).subscribe({
+      next: (response: any) => {
+        this.isLiked = response.liked;
+        this.likes = response.likeCount;
+
+        if (this.isLiked) {
+          this.animateLike();
+        }
+      },
+      error: (err) => {
+        console.error('Error al actualizar like:', err);
+      }
+    });
+  }
+
+  private animateLike(): void {
+    const heartIcon = document.querySelector('.heart-icon');
+    heartIcon?.classList.add('heart-animate');
+    setTimeout(() => {
+      heartIcon?.classList.remove('heart-animate');
+    }, 1000);
   }
 
   getAuthorAvatar(username?: string): string {
@@ -67,11 +100,6 @@ export class ArticleComponent implements OnInit {
   prevImage(): void {
     const images = this.articleImages().get(this.articleId) || [];
     this.currentImageIndex = (this.currentImageIndex - 1 + images.length) % images.length;
-  }
-
-  toggleLike(): void {
-    this.isLiked = !this.isLiked;
-    this.likes += this.isLiked ? 1 : -1;
   }
   
   getImageCount(): number {

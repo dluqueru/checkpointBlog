@@ -191,4 +191,12 @@ export class AuthService {
       });
     });
   }
+
+  getUserProfile(username: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/user/${username}`);
+  }
+
+  getLikedArticles(username: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/user/${username}/liked-articles`);
+  }
 }

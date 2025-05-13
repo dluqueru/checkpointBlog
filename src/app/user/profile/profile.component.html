@@ -1,0 +1,143 @@
+<div class="mt-8 flex justify-center items-center">
+    <div class="grid gap-4 w-full px-6 lg:px-8">
+      <div
+        id="back-div"
+        class="bg-gradient-to-r from-teal-700 to-purple-900 rounded-2xl m-2 max-w-md mx-auto"
+      >
+      <div
+        class="medium-gray border-8 border-transparent rounded-xl dark:bg-gray-900 bg-white shadow-lg p-4 lg:p-2 m-1"
+      >
+        @if (loading) {
+        <div class="text-center py-8">Cargando perfil...</div>
+        } @else if (user) {
+        <div class="flex items-center">
+          <div class="relative-mt-16">
+            <img
+              class="h-28 w-28 rounded-full border-2 border-[--accent-silver] object-cover shadow-md"
+              [src]="user.photo || 'assets/images/avatarDefaultImage.jpg'"
+              [alt]="user.username + ' profile picture'"
+            />
+          </div>
+
+          <div class="ml-4 flex-1">
+            <h3 class="text-xl font-bold text-gray-800">
+              {{ user.name || user.username }}
+            </h3>
+            <p class="text-indigo-600 font-medium">{{ user.role }}</p>
+          </div>
+        </div>
+
+        <div class="pt-6 pb-6 px-6">
+          <div class="flex justify-center space-x-4 mt-2">
+            <div class="text-center">
+              <p class="text-xl font-bold text-gray-800">
+                {{ this.likedArticlesCount }}
+              </p>
+              <p class="text-xs text-gray-500">Artículos likeados</p>
+            </div>
+            <div class="text-center">
+              <p class="text-xl font-bold text-gray-800">
+                {{ user.reputation || 0 }}
+              </p>
+              <p class="text-xs text-gray-500">Reputación</p>
+            </div>
+            <div class="text-center">
+              <p class="text-xl font-bold text-gray-800">
+                {{ user.followersCount || 0 }}
+              </p>
+              <p class="text-xs text-gray-500">Suscripciones</p>
+            </div>
+          </div>
+
+          <!-- <div class="mt-4 flex justify-center">
+            @if (isCurrentUser) {
+            <button
+              routerLink="/settings"
+              class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150 ease-in-out text-sm"
+            >
+              Editar perfil
+            </button>
+            } @else {
+            <button
+              class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition duration-150 ease-in-out text-sm"
+            >
+              {{ user.isFollowing ? "Dejar de seguir" : "Seguir" }}
+            </button>
+            }
+          </div> -->
+        </div>
+        } @else {
+        <div class="text-center py-8">Usuario no encontrado</div>
+        }
+      </div>
+    </div>
+    <div class="mx-auto w-full max-w-7xl">
+        <h2 class="text-2xl font-bold text-white mb-6">Artículos Likeados</h2>
+        
+        @if (loadingArticles) {
+          <div class="absolute inset-0 flex justify-center items-center bg-black/40 backdrop-blur-sm z-50">
+            <div class="p-4 animate-[spin_0.3s_linear_infinite] bg-gradient-to-r from-teal-700 to-purple-900 rounded-full">
+              <div class="h-12 w-12 rounded-full bg-gray-900"></div>
+            </div>
+          </div>
+        } @else {
+            <div class="mx-auto grid max-w-2xl auto-rows-fr grid-cols-1 gap-16 sm:mt-12 lg:mx-0 lg:max-w-none lg:grid-cols-2">
+            @if (likedArticles.length > 0) {
+              @for (article of likedArticles; track article.id) {
+                <article class="relative isolate flex flex-col justify-end overflow-hidden rounded-2xl bg-gray-900 dark:bg-gray-700 px-8 py-8 pb-8 pt-80 sm:pt-48 lg:pt-80 transition-transform duration-500 hover:scale-105 max-w-full">
+                  <a routerLink="/article/{{article.id}}">
+                    <img
+                      [src]="getMainImageForArticle(article.id)"
+                      [appDefaultImage]="'assets/images/articleDefaultImage.jpg'"
+                      alt="Imagen de artículo"
+                      class="absolute inset-0 -z-10 h-full w-full object-cover">
+                    <div class="absolute inset-0 -z-10 bg-gradient-to-t from-purple-900/40 via-purple-900/10 to-transparent"></div>
+                    <div class="absolute inset-0 -z-10 rounded-2xl ring-1 ring-inset ring-gray-900/10 max-w-full"></div>
+                    
+                    <div class="flex flex-wrap items-center gap-y-1 overflow-hidden text-sm leading-6 text-gray-300">
+                      <time [attr.datetime]="article.publishDate" class="mr-8">
+                        @if (article.publishDate == null) {
+                          UNPUBLISHED
+                        } @else {
+                          {{ article.publishDate | date:'MMM d, y' }}
+                        }
+                      </time>
+                      <div class="-ml-4 flex items-center gap-x-4">
+                        <svg viewBox="0 0 2 2" class="-ml-0.5 h-0.5 w-0.5 flex-none fill-white/50">
+                          <circle cx="1" cy="1" r="1"></circle>
+                        </svg>
+                        <div class="flex gap-x-2.5">
+                          <img
+                            [src]="getAuthorAvatar(article.username)"
+                            [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
+                            alt="Avatar de autor" 
+                            class="h-8 w-8 flex-none object-cover rounded-full bg-white/10">
+                          <span class="mt-1">
+                            {{ article.username }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <h3 class="mt-3 text-2xl font-semibold leading-6 text-white">
+                      <a><span class="absolute inset-0"></span>{{ article.title }}</a>
+                    </h3>
+                  </a>
+                </article>
+              }
+            } @else {
+              <div class="text-center py-12 col-span-2">
+                <p class="text-gray-500 text-lg">
+                  @if (isCurrentUser) {
+                    No has dado like a ningún artículo todavía.
+                  } @else {
+                    Este usuario no ha dado like a ningún artículo todavía.
+                  }
+                </p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+  </div>
+</div>

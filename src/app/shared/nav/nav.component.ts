@@ -7,7 +7,6 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-nav',
-  standalone: true,
   imports: [RouterLink, DefaultImageDirective, FormsModule],
   templateUrl: './nav.component.html'
 })

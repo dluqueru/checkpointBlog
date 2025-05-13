@@ -5,6 +5,7 @@ import { redirectIfLoggedGuard } from './shared/guards/redirect-if-logged.guard'
 import { RegisterComponent } from './auth/register/register.component';
 import { ListComponent } from './articles/list/list.component';
 import { ArticleComponent } from './articles/article/article.component';
+import { ProfileComponent } from './user/profile/profile.component';
 
 export const routes: Routes = [
     {
@@ -24,6 +25,11 @@ export const routes: Routes = [
     {
         path: 'article/:articleId',
         component: ArticleComponent,
+        canActivate: [loginGuard]
+    },
+    {
+        path: 'user/:username',
+        component: ProfileComponent,
         canActivate: [loginGuard]
     },
     {

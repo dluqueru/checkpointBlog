@@ -55,15 +55,19 @@
 
         @if (authService.isLogged()) {
             <div class="flex items-center space-x-4 order-last">
-                <img 
-                    [src]="authService.photo"
-                    [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
-                    alt="Foto de perfil"
-                    class="w-10 h-10 md:w-12 md:h-12 object-cover rounded-full border-2 border-[--accent-silver] dark:border-gray-600 hover:cursor-pointer"
-                />
-                <span class="hidden md:inline text-gray-300 hover:text-white transition-colors duration-300 hover:cursor-pointer">
-                    {{authService.username}} 
-                </span>
+                <a routerLink="/user/{{authService.username}}" title="Ir a tu perfil">
+                    <img 
+                        [src]="authService.photo"
+                        [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
+                        alt="Foto de perfil"
+                        class="w-10 h-10 md:w-12 md:h-12 object-cover rounded-full border-2 border-[--accent-silver] dark:border-gray-600 hover:cursor-pointer"
+                    />
+                </a>
+                <a routerLink="/user/{{authService.username}}" title="Ir a tu perfil">
+                    <span class="hidden md:inline text-gray-300 hover:text-white transition-colors duration-300 hover:cursor-pointer">
+                        {{authService.username}} 
+                    </span>
+                </a>
                 @if (authService.role === 'READER') {
                     <span title="Rol: Reader" class="rounded-full border-2 border-[--accent-silver]">
                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed" class="m-1">
