@@ -1,11 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { SidebarComponent } from '../../shared/sidebar/sidebar.component';
-import { ArticlesService } from '../services/articles.service';
-import { CategoriesService } from '../services/categories.service';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component, inject, OnInit, HostListener } from '@angular/core';
+import { DatePipe, CommonModule } from '@angular/common';
 import { DefaultImageDirective } from '../../shared/directives/default-image.directive';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
+import { ArticlesService } from '../services/articles.service';
+import { CategoriesService } from '../services/categories.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -28,6 +27,15 @@ export class ListComponent implements OnInit {
   ngOnInit(): void {
     this.loadCategories();
     this.setupSearchListener();
+    this.loadInitialArticles();
+  }
+
+  private loadInitialArticles(): void {
+      this.articlesService.getArticles(true).subscribe({
+          error: () => {
+              this.articlesService.articles.set([]);
+          }
+      });
   }
 
   private setupSearchListener(): void {
@@ -47,9 +55,29 @@ export class ListComponent implements OnInit {
           error: error => console.error('Error en la búsqueda:', error)
         });
       } else {
-        this.articlesService.getArticles();
+        this.articlesService.getArticles(true).subscribe();
       }
     });
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onScroll(): void {
+    if (this.isNearBottom() && !this.articlesService.loading()) {
+      this.loadMoreArticles();
+    }
+  }
+
+  private isNearBottom(): boolean {
+    const threshold = 200;
+    const position = window.scrollY + window.innerHeight;
+    const height = document.body.scrollHeight;
+    return position > height - threshold;
+  }
+
+  private loadMoreArticles(): void {
+    if (!this.searchQuery && this.selectedCategoryId === null) {
+      this.articlesService.getArticles().subscribe();
+    }
   }
 
   loadCategories(): void {

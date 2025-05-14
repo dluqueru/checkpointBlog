@@ -1,12 +1,10 @@
 <div class="flex relative">
-    @if (loading()) {
-        <div class="absolute inset-0 flex justify-center items-center bg-black/40 backdrop-blur-sm z-50">
-            <div class="p-4 animate-[spin_0.3s_linear_infinite] bg-gradient-to-r from-teal-700 to-purple-900 rounded-full">
-                <div class="h-12 w-12 rounded-full bg-gray-900"></div>
-            </div>
-        </div>
-    }
     <div class="flex-1 mx-auto max-w-7xl px-6 lg:px-8 pt-8 overflow-hidden">
+        @if (loading()) {
+            <div class="flex justify-center items-center my-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[--button-turquoise]"></div>
+            </div>
+        }
         <div class="mx-auto max-w-2xl text-center mb-4">
             <h1 class="text-4xl font-bold text-white mb-2">{{ article()?.title }}</h1>
             <div class="flex items-center justify-center gap-x-4 text-gray-300">

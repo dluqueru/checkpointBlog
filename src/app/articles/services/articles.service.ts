@@ -1,8 +1,8 @@
-import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { AuthService } from '../../auth/services/auth.service';
-import { Article, Image } from '../../shared/interfaces/articles';
-import { forkJoin, Observable, tap } from 'rxjs';
+import { Article, ArticlesResponse, Image } from '../../shared/interfaces/articles';
+import { catchError, finalize, forkJoin, map, Observable, of, tap } from 'rxjs';
 import { User } from '../../shared/interfaces/auth';
 
 @Injectable({
@@ -18,52 +18,87 @@ export class ArticlesService {
   articleAuthorMapSignal = signal<Map<string, User>>(new Map());
   private loadingSignal = signal<boolean>(false);
   singleArticleSignal = signal<Article | null>(null);
+  private currentPage = 0;
+  private hasMore = true;
 
   get articles() { return this.articleListSignal; }
   get articleImages() { return this.articleImagesSignal; }
   get articleAuthor() { return this.articleAuthorMapSignal; }
   get loading() { return this.loadingSignal; }
   get article() { return this.singleArticleSignal; }
+  get hasMoreItems() { return this.hasMore; }
 
-  getArticles(): void {
+  getArticles(reset: boolean = false): Observable<void> {
+    if (this.loadingSignal() || (!reset && !this.hasMore)) {
+        return of(undefined).pipe(map(() => {}));
+    }
+
+    if (reset) {
+        this.currentPage = 0;
+        this.hasMore = true;
+        this.articleListSignal.set([]);
+        this.articleImagesSignal.set(new Map());
+        this.articleAuthorMapSignal.set(new Map());
+    }
+
     this.loadingSignal.set(true);
-    this.articleListSignal.set([]);
-    
-    this.http.get<Article[]>(`${this.urlBase}/article`).pipe(
-      tap(articles => this.articleListSignal.set(articles))
-    ).subscribe({
-      next: articles => {
-        if (articles.length === 0) {
-          this.loadingSignal.set(false);
-          return;
-        }
 
-        forkJoin([
-          this.loadImagesForArticles(articles),
-          this.loadAuthorsForArticles(articles)
-        ]).subscribe({
-          complete: () => this.loadingSignal.set(false)
-        });
-      },
-      error: error => {
-        console.error('Error cargando artículos:', error);
-        this.loadingSignal.set(false);
-      }
-    });
+    const params = new HttpParams()
+        .set('page', this.currentPage.toString())
+        .set('size', '4');
+
+    return this.http.get<ArticlesResponse>(`${this.urlBase}/article`, { params }).pipe(
+        tap(response => {
+            const articles = response?.articles || [];
+            this.hasMore = response?.hasNext || false;
+            
+            this.currentPage = response?.currentPage || this.currentPage + 1;
+            this.articleListSignal.update(current => [...current, ...articles]);
+
+            if (articles.length > 0) {
+                forkJoin([
+                    this.loadImagesForArticles(articles),
+                    this.loadAuthorsForArticles(articles)
+                ]).subscribe({
+                    error: (err) => {
+                        console.error('Error cargando imágenes o autores:', err);
+                        const currentImages = this.articleImagesSignal();
+                        articles.forEach(article => {
+                            if (!currentImages.has(article.id)) {
+                                currentImages.set(article.id, []);
+                            }
+                        });
+                        this.articleImagesSignal.set(new Map(currentImages));
+                    }
+                });
+            }
+        }),
+        catchError(error => {
+            console.error('Error cargando artículos:', error);
+            this.hasMore = false;
+            return of(undefined);
+        }),
+        finalize(() => this.loadingSignal.set(false)),
+        map(() => {})
+    );
   }
 
   loadImagesForArticles(articles: Article[]): Observable<Image[][]> {
     const requests = articles.map(article => 
-      this.http.get<Image[]>(`${this.urlBase}/api/images/article/${article.id}`)
+      this.http.get<Image[]>(`${this.urlBase}/api/images/article/${article.id}`).pipe(
+        catchError(() => of([]))
+      )
     );
     
     return forkJoin(requests).pipe(
       tap(imageLists => {
-        const imagesMap = new Map<number, Image[]>();
+        const currentImages = new Map(this.articleImagesSignal());
         articles.forEach((article, index) => {
-          imagesMap.set(article.id, imageLists[index]);
+          if (!currentImages.has(article.id) || imageLists[index].length > 0) {
+            currentImages.set(article.id, imageLists[index]);
+          }
         });
-        this.articleImagesSignal.set(imagesMap);
+        this.articleImagesSignal.set(currentImages);
       })
     );
   }

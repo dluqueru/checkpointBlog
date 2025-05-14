@@ -21,4 +21,10 @@ export interface Image {
     publicId: string;
     format?: string;
     articleId: number;
-  }
+}
+
+export interface ArticlesResponse {
+    hasNext: boolean;
+    currentPage: number;
+    articles: Article[];
+}
