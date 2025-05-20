@@ -2,7 +2,7 @@ import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { DatePipe, CommonModule } from '@angular/common';
 import { DefaultImageDirective } from '../../shared/directives/default-image.directive';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { ArticlesService } from '../services/articles.service';
 import { CategoriesService } from '../services/categories.service';
 import { forkJoin } from 'rxjs';
@@ -16,6 +16,7 @@ import { forkJoin } from 'rxjs';
 export class ListComponent implements OnInit {
   articlesService = inject(ArticlesService);
   categoriesService = inject(CategoriesService);
+  private router = inject(Router);
   route = inject(ActivatedRoute);
   imagesMap = this.articlesService.articleImages;
 
@@ -31,6 +32,7 @@ export class ListComponent implements OnInit {
   }
 
   private loadInitialArticles(): void {
+      this.articlesService.articles.set([]);
       this.articlesService.getArticles(true).subscribe({
           error: () => {
               this.articlesService.articles.set([]);
@@ -40,23 +42,30 @@ export class ListComponent implements OnInit {
 
   private setupSearchListener(): void {
     this.route.queryParams.subscribe(params => {
-      this.searchQuery = params['search'] || '';
-      if (this.searchQuery) {
-        this.articlesService.searchArticlesByTitle(this.searchQuery).subscribe({
-          next: articles => {
-            this.articlesService.articles.set(articles);
-            if (articles.length > 0) {
-              forkJoin([
-                this.articlesService.loadImagesForArticles(articles),
-                this.articlesService.loadAuthorsForArticles(articles)
-              ]).subscribe();
+        const newSearchQuery = params['search'] || '';
+
+        if (newSearchQuery !== this.searchQuery) {
+            this.searchQuery = newSearchQuery;
+            
+            if (this.searchQuery) {
+                this.articlesService.searchArticlesByTitle(this.searchQuery).subscribe({
+                    next: articles => {
+                        this.articlesService.articles.set(articles);
+                        if (articles.length > 0) {
+                            forkJoin([
+                                this.articlesService.loadImagesForArticles(articles),
+                                this.articlesService.loadAuthorsForArticles(articles)
+                            ]).subscribe();
+                        }
+                    },
+                    error: error => console.error('Error en la búsqueda:', error)
+                });
+            } else {
+                if (this.articlesService.articles().length === 0 || this.searchQuery !== '') {
+                    this.articlesService.getArticles(true).subscribe();
+                }
             }
-          },
-          error: error => console.error('Error en la búsqueda:', error)
-        });
-      } else {
-        this.articlesService.getArticles(true).subscribe();
-      }
+        }
     });
   }
 
@@ -105,40 +114,57 @@ export class ListComponent implements OnInit {
   }
 
   get filteredArticles() {
-    let articles = this.articlesService.articles();
+    let articles = this.articlesService.articles() || [];
+    
+    if (!Array.isArray(articles)) {
+        console.error('articles is not an array:', articles);
+        return [];
+    }
 
     if (this.selectedCategoryId !== null) {
-      articles = articles.filter(article =>
-        article.categories.some(category => category.categoryId === this.selectedCategoryId)
-      );
+        articles = articles.filter(article =>
+            article?.categories?.some(category => category?.categoryId === this.selectedCategoryId)
+        );
     }
 
     if (this.searchQuery) {
-      const searchTerm = this.searchQuery.toLowerCase();
-      articles = articles.filter(article => 
-        article.title.toLowerCase().includes(searchTerm)
-      );
+        const searchTerm = this.searchQuery.toLowerCase();
+        articles = articles.filter(article => 
+            article?.title?.toLowerCase().includes(searchTerm)
+        );
     }
 
+    if (articles.length === 0) return articles;
+
     switch (this.selectedSort) {
-      case 'oldest':
-        return [...articles].sort((a, b) => 
-          new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime());
-      case 'views_asc':
-        return [...articles].sort((a, b) => (a.views || 0) - (b.views || 0));
-      case 'views_desc':
-        return [...articles].sort((a, b) => (b.views || 0) - (a.views || 0));
-      case 'newest':
-      default:
-        return [...articles].sort((a, b) => 
-          new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
+        case 'oldest':
+            return [...articles].sort((a, b) => 
+                new Date(a.publishDate || 0).getTime() - new Date(b.publishDate || 0).getTime());
+        case 'views_asc':
+            return [...articles].sort((a, b) => (a.views || 0) - (b.views || 0));
+        case 'views_desc':
+            return [...articles].sort((a, b) => (b.views || 0) - (a.views || 0));
+        case 'newest':
+        default:
+            return [...articles].sort((a, b) => 
+                new Date(b.publishDate || 0).getTime() - new Date(a.publishDate || 0).getTime());
     }
   }
 
+  
   clearFilters() {
-    this.selectedCategoryId = null;
-    this.selectedSort = 'newest';
-    this.searchQuery = '';
-    this.onCategorySelected();
+      this.selectedCategoryId = null;
+      this.selectedSort = 'newest';
+
+      if (this.searchQuery) {
+          this.searchQuery = '';
+          this.router.navigate([], {
+              queryParams: { search: null },
+              queryParamsHandling: 'merge',
+              replaceUrl: true
+          });
+      }
+
+      this.articlesService.getArticles(true).subscribe();
   }
 }

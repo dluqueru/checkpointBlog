@@ -29,7 +29,7 @@ export class ArticlesService {
   get hasMoreItems() { return this.hasMore; }
 
   getArticles(reset: boolean = false): Observable<void> {
-    if (this.loadingSignal() || (!reset && !this.hasMore)) {
+    if (this.loadingSignal()) {
         return of(undefined).pipe(map(() => {}));
     }
 
@@ -39,6 +39,8 @@ export class ArticlesService {
         this.articleListSignal.set([]);
         this.articleImagesSignal.set(new Map());
         this.articleAuthorMapSignal.set(new Map());
+    } else if (!this.hasMore) {
+        return of(undefined).pipe(map(() => {}));
     }
 
     this.loadingSignal.set(true);
@@ -53,7 +55,7 @@ export class ArticlesService {
             this.hasMore = response?.hasNext || false;
             
             this.currentPage = response?.currentPage || this.currentPage + 1;
-            this.articleListSignal.update(current => [...current, ...articles]);
+            this.articleListSignal.update(current => [...(current || []), ...articles]);
 
             if (articles.length > 0) {
                 forkJoin([
@@ -76,6 +78,7 @@ export class ArticlesService {
         catchError(error => {
             console.error('Error cargando artículos:', error);
             this.hasMore = false;
+            this.articleListSignal.set([]);
             return of(undefined);
         }),
         finalize(() => this.loadingSignal.set(false)),
