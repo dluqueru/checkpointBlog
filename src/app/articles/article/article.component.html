@@ -60,12 +60,50 @@
                 </button>
 
                 <button 
-                    title="Reportar artículo" class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
-                    > <!-- (click)="report()"-->
-                    <svg class="fill-current text-gray-400 hover:text-yellow-600 transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                    title="{{ isReported ? 'Artículo reportado' : 'Reportar artículo' }}" 
+                    class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
+                    (click)="reportArticle()"
+                    [disabled]="reportDisabled || reportLoading"
+                    [class.opacity-50]="reportDisabled"
+                    [class.cursor-not-allowed]="reportDisabled">
+                    
+                    <svg class="fill-current text-gray-400 hover:text-yellow-600 transition-colors duration-300" 
+                        xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
+                        [attr.fill]="isReported ? '#ef4444' : '#e8eaed'">
                         <path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240ZM330-120 120-330v-300l210-210h300l210 210v300L630-120H330Zm34-80h232l164-164v-232L596-760H364L200-596v232l164 164Zm116-280Z"/>
                     </svg>
+                    
+                    @if (reportLoading) {
+                        <span class="ml-2 text-sm">Reportando...</span>
+                    }
+                    @else if (isReported) {
+                        <span class="ml-2 text-sm text-red-400">Reportado</span>
+                    }
                 </button>
+
+                @if (isAdmin && isReported) {
+                    <button 
+                        title="Desreportar artículo"
+                        class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
+                        (click)="unreportArticle()"
+                        [disabled]="unreportLoading"
+                        [class.opacity-50]="unreportLoading"
+                        [class.cursor-not-allowed]="unreportLoading">
+                        
+                        <svg class="fill-current text-gray-400 hover:text-green-500 transition-colors duration-300" 
+                            xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
+                            fill="#e8eaed">
+                            <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
+                        </svg>
+                        
+                        @if (unreportLoading) {
+                            <span class="ml-2 text-sm">Desreportando...</span>
+                        }
+                        @else {
+                            <span class="ml-2 text-sm text-green-400">Desreportar</span>
+                        }
+                    </button>
+                }
             </div>
         </div>
 

@@ -127,23 +127,23 @@ export class ArticlesService {
     this.loadingSignal.set(true);
     
     forkJoin([
-        this.http.get<Article>(`${this.urlBase}/article/${articleId}`),
-        this.http.get<Image[]>(`${this.urlBase}/api/images/article/${articleId}`)
+      this.http.get<Article>(`${this.urlBase}/article/${articleId}`),
+      this.http.get<Image[]>(`${this.urlBase}/api/images/article/${articleId}`)
     ]).subscribe({
-        next: ([article, images]) => {
-            this.singleArticleSignal.set(article);
+      next: ([article, images]) => {
+        this.singleArticleSignal.set(article);
 
-            const newMap = new Map(this.articleImagesSignal());
-            newMap.set(articleId, images);
-            this.articleImagesSignal.set(newMap);
-            
-            this.loadAuthor(article.username);
-        },
-        error: (err) => {
-            console.error(`Error loading article ${articleId}:`, err);
-            this.loadingSignal.set(false);
-        },
-        complete: () => this.loadingSignal.set(false)
+        const newMap = new Map(this.articleImagesSignal());
+        newMap.set(articleId, images);
+        this.articleImagesSignal.set(newMap);
+        
+        this.loadAuthor(article.username);
+      },
+      error: (err) => {
+        console.error(`Error loading article ${articleId}:`, err);
+        this.loadingSignal.set(false);
+      },
+      complete: () => this.loadingSignal.set(false)
     });
   }
 
@@ -186,6 +186,39 @@ export class ArticlesService {
   }
 
   searchArticlesByTitle(title: string): Observable<Article[]> {
-    return this.http.get<Article[]>(`${this.urlBase}/article/search?title=${encodeURIComponent(title)}`);
+    this.loadingSignal.set(true);
+    return this.http.get<Article[]>(`${this.urlBase}/article/search?title=${encodeURIComponent(title)}`).pipe(
+      finalize(() => this.loadingSignal.set(false))
+    );
+  }
+
+  reportArticle(articleId: number): Observable<Article> {
+    return this.http.put<Article>(`${this.urlBase}/article/${articleId}/report`, null).pipe(
+      catchError(error => {
+        console.error('Error reporting article:', error);
+        throw error;
+      })
+    );
+  }
+
+  unreportArticle(articleId: number): Observable<Article> {
+    return this.http.put<Article>(`${this.urlBase}/article/${articleId}/unreport`, null).pipe(
+      tap(unreportedArticle => {
+        const currentArticle = this.singleArticleSignal();
+        if (currentArticle?.id === articleId) {
+          this.singleArticleSignal.set({...currentArticle, reported: false});
+        }
+
+        this.articleListSignal.update(articles => 
+          articles.map(article => 
+            article.id === articleId ? {...article, reported: false} : article
+          )
+        );
+      }),
+      catchError(error => {
+        console.error('Error unreporting article:', error);
+        throw error;
+      })
+    );
   }
 }

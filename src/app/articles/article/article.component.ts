@@ -4,6 +4,8 @@ import { DatePipe } from '@angular/common';
 import { FormatParagraphsPipe } from '../../format-paragraphs.pipe';
 import { DefaultImageDirective } from '../../shared/directives/default-image.directive';
 import { LikeService } from '../services/like.service';
+import Swal from 'sweetalert2';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
   selector: 'app-article',
@@ -14,6 +16,7 @@ export class ArticleComponent implements OnInit {
   @Input() articleId!: number;
   private articlesService = inject(ArticlesService);
   private likeService = inject(LikeService);
+  private authService = inject(AuthService);
   
   article = this.articlesService.singleArticleSignal;
   articleImages = this.articlesService.articleImagesSignal;
@@ -25,10 +28,20 @@ export class ArticleComponent implements OnInit {
   currentImageIndex = 0;
   imagesLoaded = false;
 
+  isReported = false;
+  reportLoading = false;
+  reportDisabled = false;
+  unreportLoading = false;
+  isAdmin = false;
+
   constructor() {
     effect(() => {
       const images = this.articleImages().get(this.articleId);
       this.imagesLoaded = !!images && images.length > 0;
+
+      this.isReported = this.article()?.reported || false;
+      this.reportDisabled = this.isReported;
+      this.isAdmin = this.authService.isAdmin();
     });
   }
 
@@ -104,5 +117,91 @@ export class ArticleComponent implements OnInit {
   
   getImageCount(): number {
     return this.articleImages().get(this.articleId)?.length || 0;
+  }
+
+  reportArticle(): void {
+    if (this.reportDisabled || this.reportLoading) return;
+    
+    this.reportLoading = true;
+    
+    this.articlesService.reportArticle(this.articleId).subscribe({
+      next: (updatedArticle) => {
+        this.isReported = true;
+        this.reportDisabled = true;
+
+        this.articlesService.singleArticleSignal.set(updatedArticle);
+        
+        Swal.fire({
+          title: "Artículo reportado",
+          text: "Hemos recibido tu reporte. Los administradores lo revisarán pronto.",
+          icon: 'warning',
+          iconColor: '#008B8B',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#008B8B',
+          background: 'rgba(44, 44, 44, 0.95)',
+          color: '#FFFFFF'
+        });
+      },
+      error: (err) => {
+        console.error('Error al reportar artículo:', err);
+        
+        Swal.fire({
+          title: 'Error!',
+          text: 'No se pudo reportar el artículo. Por favor inténtalo más tarde.',
+          icon: 'error',
+          iconColor: '#d32f2f',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#008B8B',
+          background: 'rgba(44, 44, 44, 0.95)',
+          color: '#FFFFFF'
+        });
+      },
+      complete: () => {
+        this.reportLoading = false;
+      }
+    });
+  }
+
+  unreportArticle(): void {
+    if (!this.isAdmin || !this.article()?.reported) return;
+    
+    this.unreportLoading = true;
+    
+    this.articlesService.unreportArticle(this.articleId).subscribe({
+      next: (updatedArticle) => {
+        this.isReported = false;
+        this.reportDisabled = false;
+
+        this.articlesService.singleArticleSignal.set(updatedArticle);
+        
+        Swal.fire({
+          title: "Artículo desreportado",
+          text: "El artículo ha sido restaurado correctamente.",
+          icon: 'success',
+          iconColor: '#008B8B',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#008B8B',
+          background: 'rgba(44, 44, 44, 0.95)',
+          color: '#FFFFFF'
+        });
+      },
+      error: (err) => {
+        console.error('Error al desreportar artículo:', err);
+        
+        Swal.fire({
+          title: 'Error!',
+          text: 'No se pudo desreportar el artículo. Por favor inténtalo más tarde.',
+          icon: 'error',
+          iconColor: '#d32f2f',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#008B8B',
+          background: 'rgba(44, 44, 44, 0.95)',
+          color: '#FFFFFF'
+        });
+      },
+      complete: () => {
+        this.unreportLoading = false;
+      }
+    });
   }
 }

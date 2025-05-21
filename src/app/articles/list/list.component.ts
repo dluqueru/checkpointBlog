@@ -42,30 +42,38 @@ export class ListComponent implements OnInit {
 
   private setupSearchListener(): void {
     this.route.queryParams.subscribe(params => {
-        const newSearchQuery = params['search'] || '';
+      const newSearchQuery = params['search'] || '';
 
-        if (newSearchQuery !== this.searchQuery) {
-            this.searchQuery = newSearchQuery;
-            
-            if (this.searchQuery) {
-                this.articlesService.searchArticlesByTitle(this.searchQuery).subscribe({
-                    next: articles => {
-                        this.articlesService.articles.set(articles);
-                        if (articles.length > 0) {
-                            forkJoin([
-                                this.articlesService.loadImagesForArticles(articles),
-                                this.articlesService.loadAuthorsForArticles(articles)
-                            ]).subscribe();
-                        }
-                    },
-                    error: error => console.error('Error en la búsqueda:', error)
+      if (newSearchQuery !== this.searchQuery) {
+        this.searchQuery = newSearchQuery;
+        this.articlesService.loading.set(true);
+        
+        if (this.searchQuery) {
+          this.articlesService.searchArticlesByTitle(this.searchQuery).subscribe({
+            next: articles => {
+              this.articlesService.articles.set(articles);
+              if (articles.length > 0) {
+                forkJoin([
+                  this.articlesService.loadImagesForArticles(articles),
+                  this.articlesService.loadAuthorsForArticles(articles)
+                ]).subscribe({
+                  complete: () => this.articlesService.loading.set(false)
                 });
-            } else {
-                if (this.articlesService.articles().length === 0 || this.searchQuery !== '') {
-                    this.articlesService.getArticles(true).subscribe();
-                }
+              } else {
+                this.articlesService.loading.set(false);
+              }
+            },
+            error: error => {
+              console.error('Error en la búsqueda:', error);
+              this.articlesService.loading.set(false);
             }
+          });
+        } else {
+          this.articlesService.getArticles(true).subscribe({
+            complete: () => this.articlesService.loading.set(false)
+          });
         }
+      }
     });
   }
 
@@ -97,7 +105,10 @@ export class ListComponent implements OnInit {
   }
 
   onCategorySelected(): void {
-    this.articlesService.getArticles();
+    this.articlesService.loading.set(true);
+    this.articlesService.getArticles(true).subscribe({
+      complete: () => this.articlesService.loading.set(false)
+    });
   }
 
   onSortChange(): void {
@@ -150,21 +161,23 @@ export class ListComponent implements OnInit {
                 new Date(b.publishDate || 0).getTime() - new Date(a.publishDate || 0).getTime());
     }
   }
-
   
   clearFilters() {
-      this.selectedCategoryId = null;
-      this.selectedSort = 'newest';
+    this.selectedCategoryId = null;
+    this.selectedSort = 'newest';
+    this.articlesService.loading.set(true);
 
-      if (this.searchQuery) {
-          this.searchQuery = '';
-          this.router.navigate([], {
-              queryParams: { search: null },
-              queryParamsHandling: 'merge',
-              replaceUrl: true
-          });
-      }
+    if (this.searchQuery) {
+      this.searchQuery = '';
+      this.router.navigate([], {
+        queryParams: { search: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      });
+    }
 
-      this.articlesService.getArticles(true).subscribe();
+    this.articlesService.getArticles(true).subscribe({
+      complete: () => this.articlesService.loading.set(false)
+    });
   }
 }

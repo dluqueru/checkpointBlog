@@ -199,4 +199,8 @@ export class AuthService {
   getLikedArticles(username: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/user/${username}/liked-articles`);
   }
+
+  isAdmin(): boolean {
+    return this._role === 'ADMIN';
+  }
 }
