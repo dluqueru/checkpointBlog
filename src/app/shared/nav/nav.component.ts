@@ -55,15 +55,28 @@ export class NavComponent implements AfterViewInit {
     this.closeMobileMenu();
   }
 
+  navigateToHome() {
+    this.articlesService.resetPagination();
+    this.router.navigate(['/']).then(() => {
+      window.location.reload();
+    });
+  }
+
   searchArticles(event: Event) {
     event.preventDefault();
     if (this.searchQuery.trim()) {
+      this.articlesService.resetPagination();
       this.router.navigate(['/'], { 
         queryParams: { search: this.searchQuery.trim() },
         queryParamsHandling: 'merge'
       });
-      this.searchQuery = '';
-      this.closeMobileMenu();
+    } else {
+      this.articlesService.resetPagination();
+      this.router.navigate(['/']).then(() => {
+        this.articlesService.getArticles(true).subscribe();
+      });
     }
+    this.searchQuery = '';
+    this.closeMobileMenu();
   }
 }

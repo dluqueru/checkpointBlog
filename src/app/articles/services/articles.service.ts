@@ -32,7 +32,7 @@ export class ArticlesService {
 
   getArticles(reset: boolean = false): Observable<void> {
     if (this.loadingSignal()) {
-        return of(undefined).pipe(map(() => {}));
+      return of(undefined).pipe(map(() => {}));
     }
 
     if (reset) {
@@ -50,68 +50,41 @@ export class ArticlesService {
     const nextPage = reset ? 0 : this.currentPage + 1;
 
     const params = new HttpParams()
-        .set('page', nextPage.toString())
-        .set('size', '4')
-        .set('sort', 'publishDate,desc');
+      .set('page', nextPage.toString())
+      .set('size', '4')
+      .set('sort', 'publishDate,desc');
 
     return this.http.get<ArticlesResponse>(`${this.urlBase}/article`, { params }).pipe(
-        tap(response => {
-            let articles = response?.articles || [];
-            this.hasMore = response?.hasNext || false;
-            this.currentPage = response?.currentPage || nextPage;
+      tap(response => {
+        const articles = response?.articles || [];
+        
+        if (reset) {
+          this.articleListSignal.set(articles);
+          this.articleImagesSignal.set(new Map());
+          this.articleAuthorMapSignal.set(new Map());
+        } else {
+          this.articleListSignal.update(current => [...current, ...articles]);
+        }
 
-            if (reset) {
-                this.articleListSignal.set(articles);
-            } else {
-                const currentArticles = this.articleListSignal();
-                const currentIds = new Set(currentArticles.map(a => a.id));
-                articles = articles.filter(article => !currentIds.has(article.id));
-                this.articleListSignal.set([...currentArticles, ...articles]);
-            }
+        this.hasMore = response?.hasNext || false;
+        this.currentPage = response?.currentPage || nextPage;
 
-            if (articles.length === 0 && this.hasMore) {
-                this.currentPage = nextPage;
-                this.getArticles().subscribe();
-                return;
-            }
-
-            if (articles.length === 0) {
-                this.consecutiveEmptyLoads++;
-                if (this.consecutiveEmptyLoads >= this.maxConsecutiveEmptyLoads) {
-                    console.log('Demasiadas cargas vacías consecutivas, deteniendo...');
-                    this.hasMore = false;
-                    return;
-                }
-            } else {
-                this.consecutiveEmptyLoads = 0;
-            }
-
-            if (articles.length > 0) {
-                forkJoin([
-                    this.loadImagesForArticles(articles),
-                    this.loadAuthorsForArticles(articles)
-                ]).subscribe({
-                    complete: () => console.log('Imágenes y autores cargados')
-                });
-            }
-
-            this.articleListSignal.update(current => 
-                [...current].sort((a, b) => {
-                    const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
-                    const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
-                    return dateB - dateA;
-                })
-            );
-        }),
-        catchError(error => {
-            console.error('Error cargando artículos:', error);
-            this.hasMore = false;
-            return of(undefined);
-        }),
-        finalize(() => {
-            this.loadingSignal.set(false);
-        }),
-        map(() => {})
+        if (articles.length > 0) {
+          forkJoin([
+            this.loadImagesForArticles(articles),
+            this.loadAuthorsForArticles(articles)
+          ]).subscribe();
+        }
+      }),
+      catchError(error => {
+        console.error('Error cargando artículos:', error);
+        this.hasMore = false;
+        return of(undefined);
+      }),
+      finalize(() => {
+        this.loadingSignal.set(false);
+      }),
+      map(() => {})
     );
   }
 
@@ -220,7 +193,18 @@ export class ArticlesService {
 
   searchArticlesByTitle(title: string): Observable<Article[]> {
     this.loadingSignal.set(true);
+    this.resetPagination();
+    
     return this.http.get<Article[]>(`${this.urlBase}/article/search?title=${encodeURIComponent(title)}`).pipe(
+      tap(articles => {
+        this.articleListSignal.set(articles);
+        if (articles.length > 0) {
+          forkJoin([
+            this.loadImagesForArticles(articles),
+            this.loadAuthorsForArticles(articles)
+          ]).subscribe();
+        }
+      }),
       finalize(() => this.loadingSignal.set(false))
     );
   }
@@ -270,5 +254,15 @@ export class ArticlesService {
               throw error;
           })
       );
+  }
+
+  resetPagination(): void {
+    this.currentPage = 0;
+    this.hasMore = true;
+    this.consecutiveEmptyLoads = 0;
+    this.articleListSignal.set([]);
+    this.articleImagesSignal.set(new Map());
+    this.articleAuthorMapSignal.set(new Map());
+    this.loadingSignal.set(false);
   }
 }

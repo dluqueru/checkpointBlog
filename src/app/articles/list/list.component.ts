@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, HostListener } from '@angular/core';
+import { Component, inject, OnInit, HostListener, ChangeDetectorRef } from '@angular/core';
 import { DatePipe, CommonModule } from '@angular/common';
 import { DefaultImageDirective } from '../../shared/directives/default-image.directive';
 import { FormsModule } from '@angular/forms';
@@ -24,6 +24,8 @@ export class ListComponent implements OnInit {
   selectedCategoryId: number | null = null;
   selectedSort = 'newest';
   searchQuery = '';
+
+  constructor(private cdRef: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadCategories();
@@ -183,19 +185,27 @@ export class ListComponent implements OnInit {
   clearFilters() {
     this.selectedCategoryId = null;
     this.selectedSort = 'newest';
+    this.searchQuery = '';
+
     this.articlesService.loading.set(true);
 
-    if (this.searchQuery) {
-      this.searchQuery = '';
-      this.router.navigate([], {
-        queryParams: { search: null },
-        queryParamsHandling: 'merge',
-        replaceUrl: true
-      });
-    }
+    this.articlesService.resetPagination();
 
-    this.articlesService.getArticles(true).subscribe({
-      complete: () => this.articlesService.loading.set(false)
+    this.router.navigate([], { 
+      queryParams: { search: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    }).then(() => {
+      this.articlesService.getArticles(true).subscribe({
+        next: () => {
+          this.articlesService.loading.set(false);
+          this.cdRef.detectChanges();
+        },
+        error: (error) => {
+          console.error('Error al cargar artículos:', error);
+          this.articlesService.loading.set(false);
+        }
+      });
     });
   }
 }
