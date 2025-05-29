@@ -151,10 +151,10 @@
         </div>
 
         <div class="mx-auto max-w-2xl lg:max-w-4xl">
-            <div class="bg-white/5 p-6 rounded-2xl shadow-lg text-white text-lg leading-relaxed text-justify space-y-4">
-                <div [innerHTML]="(article()?.body ?? '') | formatParagraphs"></div>
+            <div class="bg-white/5 p-6 rounded-2xl shadow-lg">
+                <div class="ql-content prose prose-invert max-w-none" [innerHTML]="(article()?.body ?? '') | formatParagraphs"></div>
             </div>
-        </div>     
+        </div>
     </div>
     <!-- <app-sidebar class="sticky top-0 h-screen border-l border-[--accent-silver] w-78 rounded-l-lg"></app-sidebar> -->
 </div>

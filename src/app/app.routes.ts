@@ -6,6 +6,7 @@ import { RegisterComponent } from './auth/register/register.component';
 import { ListComponent } from './articles/list/list.component';
 import { ArticleComponent } from './articles/article/article.component';
 import { ProfileComponent } from './user/profile/profile.component';
+import { ArticleFormComponent } from './articles/article-form/article-form.component';
 
 export const routes: Routes = [
     {
@@ -30,6 +31,11 @@ export const routes: Routes = [
     {
         path: 'user/:username',
         component: ProfileComponent,
+        canActivate: [loginGuard]
+    },
+        {
+        path: 'article-form',
+        component: ArticleFormComponent,
         canActivate: [loginGuard]
     },
     {

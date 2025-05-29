@@ -7,31 +7,30 @@ import { catchError, throwError } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
-  const token = authService.getToken();
-
-  if (req.url.includes('/user/')) {
+  
+  if (req.url.includes('/login') || req.url.includes('/register')) {
     return next(req);
   }
 
-  if (token && !authService.isTokenExpired()) {
-    req = req.clone({
-      setHeaders: {
-        Authorization: `${token}`
-      }
+  const token = authService.getToken();
+  
+  if (token) {
+    const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    
+    const authReq = req.clone({
+      headers: req.headers.set('Authorization', authHeader)
     });
+    
+    return next(authReq).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 401) {
+          authService.logout();
+          router.navigate(['/login']);
+        }
+        return throwError(() => error);
+      })
+    );
   }
-
-  return next(req).pipe(
-    catchError((error: HttpErrorResponse) => {
-      if ((error.status === 401 || error.status === 403) && 
-          !error.url?.includes('/user/')) {
-        console.error("Interceptor: Token inválido o expirado");
-        authService.logout();
-        router.navigate(['/login'], {
-          queryParams: { returnUrl: router.url }
-        });
-      }
-      return throwError(() => error);
-    })
-  );
+  
+  return next(req);
 };

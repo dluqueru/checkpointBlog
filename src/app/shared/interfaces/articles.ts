@@ -15,6 +15,23 @@ export interface Article{
     ]
 }
 
+export interface ArticlePost {
+    title: string;
+    body: string;
+    reported: boolean;
+    state: 'DRAFT' | 'DEFINITIVE';
+    publishDate: string | null;
+    views: number;
+    user: {
+        username: string;
+    };
+    articleCategories: Array<{
+        category: {
+            id: number;
+        }
+    }>;
+}
+
 export interface Image {
     id: number;
     imageUrl: string;

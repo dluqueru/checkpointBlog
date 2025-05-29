@@ -32,12 +32,15 @@ export class ListComponent implements OnInit {
   }
 
   private loadInitialArticles(): void {
-      this.articlesService.articles.set([]);
-      this.articlesService.getArticles(true).subscribe({
-          error: () => {
-              this.articlesService.articles.set([]);
-          }
-      });
+    this.articlesService.articles.set([]);
+    this.articlesService.articleImages.set(new Map());
+    this.articlesService.articleAuthor.set(new Map());
+    
+    this.articlesService.getArticles(true).subscribe({
+        error: () => {
+            this.articlesService.articles.set([]);
+        }
+    });
   }
 
   private setupSearchListener(): void {
@@ -77,10 +80,20 @@ export class ListComponent implements OnInit {
     });
   }
 
+  private lastLoadTime = 0;
+  private loadDebounceTime = 1000;
+
   @HostListener('window:scroll', ['$event'])
   onScroll(): void {
-    if (this.isNearBottom() && !this.articlesService.loading()) {
-      this.loadMoreArticles();
+    const now = Date.now();
+    if (now - this.lastLoadTime < this.loadDebounceTime) {
+        return;
+    }
+    
+    if (this.isNearBottom() && !this.articlesService.loading() && this.articlesService.hasMoreItems) {
+        console.log('Activando carga de más artículos...');
+        this.lastLoadTime = now;
+        this.loadMoreArticles();
     }
   }
 
@@ -92,8 +105,13 @@ export class ListComponent implements OnInit {
   }
 
   private loadMoreArticles(): void {
-    if (!this.searchQuery && this.selectedCategoryId === null) {
-      this.articlesService.getArticles().subscribe();
+    if (!this.searchQuery && !this.articlesService.loading() && this.articlesService.hasMoreItems) {
+        console.log('Cargando más artículos...');
+        this.articlesService.getArticles().subscribe({
+            next: () => {
+                this.articlesService.articles.update(articles => [...articles]);
+            }
+        });
     }
   }
 

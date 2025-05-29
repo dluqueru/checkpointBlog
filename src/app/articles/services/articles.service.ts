@@ -1,7 +1,7 @@
-import { HttpClient, HttpEvent, HttpEventType, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { AuthService } from '../../auth/services/auth.service';
-import { Article, ArticlesResponse, Image } from '../../shared/interfaces/articles';
+import { Article, ArticlePost, ArticlesResponse, Image } from '../../shared/interfaces/articles';
 import { catchError, finalize, forkJoin, map, Observable, of, tap } from 'rxjs';
 import { User } from '../../shared/interfaces/auth';
 
@@ -20,6 +20,8 @@ export class ArticlesService {
   singleArticleSignal = signal<Article | null>(null);
   private currentPage = 0;
   private hasMore = true;
+  private consecutiveEmptyLoads = 0;
+  private maxConsecutiveEmptyLoads = 3;
 
   get articles() { return this.articleListSignal; }
   get articleImages() { return this.articleImagesSignal; }
@@ -36,6 +38,7 @@ export class ArticlesService {
     if (reset) {
         this.currentPage = 0;
         this.hasMore = true;
+        this.consecutiveEmptyLoads = 0;
         this.articleListSignal.set([]);
         this.articleImagesSignal.set(new Map());
         this.articleAuthorMapSignal.set(new Map());
@@ -44,44 +47,70 @@ export class ArticlesService {
     }
 
     this.loadingSignal.set(true);
+    const nextPage = reset ? 0 : this.currentPage + 1;
 
     const params = new HttpParams()
-        .set('page', this.currentPage.toString())
-        .set('size', '4');
+        .set('page', nextPage.toString())
+        .set('size', '4')
+        .set('sort', 'publishDate,desc');
 
     return this.http.get<ArticlesResponse>(`${this.urlBase}/article`, { params }).pipe(
         tap(response => {
-            const articles = response?.articles || [];
+            let articles = response?.articles || [];
             this.hasMore = response?.hasNext || false;
-            
-            this.currentPage = response?.currentPage || this.currentPage + 1;
-            this.articleListSignal.update(current => [...(current || []), ...articles]);
+            this.currentPage = response?.currentPage || nextPage;
+
+            if (reset) {
+                this.articleListSignal.set(articles);
+            } else {
+                const currentArticles = this.articleListSignal();
+                const currentIds = new Set(currentArticles.map(a => a.id));
+                articles = articles.filter(article => !currentIds.has(article.id));
+                this.articleListSignal.set([...currentArticles, ...articles]);
+            }
+
+            if (articles.length === 0 && this.hasMore) {
+                this.currentPage = nextPage;
+                this.getArticles().subscribe();
+                return;
+            }
+
+            if (articles.length === 0) {
+                this.consecutiveEmptyLoads++;
+                if (this.consecutiveEmptyLoads >= this.maxConsecutiveEmptyLoads) {
+                    console.log('Demasiadas cargas vacías consecutivas, deteniendo...');
+                    this.hasMore = false;
+                    return;
+                }
+            } else {
+                this.consecutiveEmptyLoads = 0;
+            }
 
             if (articles.length > 0) {
                 forkJoin([
                     this.loadImagesForArticles(articles),
                     this.loadAuthorsForArticles(articles)
                 ]).subscribe({
-                    error: (err) => {
-                        console.error('Error cargando imágenes o autores:', err);
-                        const currentImages = this.articleImagesSignal();
-                        articles.forEach(article => {
-                            if (!currentImages.has(article.id)) {
-                                currentImages.set(article.id, []);
-                            }
-                        });
-                        this.articleImagesSignal.set(new Map(currentImages));
-                    }
+                    complete: () => console.log('Imágenes y autores cargados')
                 });
             }
+
+            this.articleListSignal.update(current => 
+                [...current].sort((a, b) => {
+                    const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+                    const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+                    return dateB - dateA;
+                })
+            );
         }),
         catchError(error => {
             console.error('Error cargando artículos:', error);
             this.hasMore = false;
-            this.articleListSignal.set([]);
             return of(undefined);
         }),
-        finalize(() => this.loadingSignal.set(false)),
+        finalize(() => {
+            this.loadingSignal.set(false);
+        }),
         map(() => {})
     );
   }
@@ -108,15 +137,19 @@ export class ArticlesService {
 
   loadAuthorsForArticles(articles: Article[]): Observable<User[]> {
     const uniqueUsernames = [...new Set(articles.map(a => a.username))];
-    const requests = uniqueUsernames.map(username => 
-      this.http.get<User>(`${this.urlBase}/user/${username}`)
+
+    const requests = uniqueUsernames.map(username =>
+      this.http.get<User>(`${this.urlBase}/user/${username}`).pipe(
+        catchError(() => of(null))
+      )
     );
-    
+
     return forkJoin(requests).pipe(
+      map((users): User[] => users.filter((u): u is User => u !== null)),
       tap(users => {
-        const userMap = new Map<string, User>();
-        uniqueUsernames.forEach((username, index) => {
-          userMap.set(username, users[index]);
+        const userMap = new Map(this.articleAuthorMapSignal());
+        users.forEach(user => {
+          userMap.set(user.username, user);
         });
         this.articleAuthorMapSignal.set(userMap);
       })
@@ -220,5 +253,22 @@ export class ArticlesService {
         throw error;
       })
     );
+  }
+
+  createArticle(articleData: ArticlePost): Observable<Article> {
+      const headers = new HttpHeaders({
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.authService.getToken()}`
+      });
+
+      return this.http.post<Article>(`${this.urlBase}/article`, articleData, { headers }).pipe(
+          catchError(error => {
+            console.log(error);
+              if (error.status === 403) {
+                  throw new Error('No tienes permisos para realizar esta acción');
+              }
+              throw error;
+          })
+      );
   }
 }

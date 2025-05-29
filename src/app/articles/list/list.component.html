@@ -59,12 +59,14 @@
             }
 
             <div class="mt-4 text-center">
-                <button title="Escribir artículo" 
-                        class="text-gray-600 hover:text-gray-800 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500">
-                    <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
-                    </svg>
-                </button>
+                <a routerLink="/article-form">
+                    <button title="Escribir artículo" 
+                            class="text-gray-600 hover:text-gray-800 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500">
+                        <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                        </svg>
+                    </button>
+                </a>
             </div>
         </div>
 
@@ -95,8 +97,7 @@
                                     </svg>
                                     <div class="flex gap-x-2.5">
                                         <img
-                                            [src]="getAuthorAvatar(article.username)"
-                                            [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
+                                            [src]="getAuthorAvatar(article.username) || 'assets/images/avatarDefaultImage.jpg'"
                                             alt="Avatar de autor" 
                                             class="h-8 w-8 flex-none object-cover rounded-full bg-white/10">
                                         <span class="mt-1">
