@@ -265,4 +265,18 @@ export class ArticlesService {
     this.articleAuthorMapSignal.set(new Map());
     this.loadingSignal.set(false);
   }
+
+  deleteArticle(articleId: number): Observable<void> {
+    const headers = new HttpHeaders({
+      'Authorization': `${this.authService.getToken()}`
+    });
+    
+    return this.http.delete<void>(`${this.urlBase}/article/${articleId}`, { headers }).pipe(
+      tap(() => {
+        this.articleListSignal.update(articles => 
+          articles.filter(article => article.id !== articleId)
+        );
+      })
+    );
+  }
 }

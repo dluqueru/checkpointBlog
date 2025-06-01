@@ -28,7 +28,7 @@
                     title="Like" class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
                     (click)="toggleLike()">
                     @if(!isLiked) {
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                        <svg class="fill-current text-gray-400 hover:text-[--vibrant-purple] transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
                             <path d="M440-501Zm0 381L313-234q-72-65-123.5-116t-85-96q-33.5-45-49-87T40-621q0-94 63-156.5T260-840q52 0 99 22t81 62q34-40 81-62t99-22q81 0 136 45.5T831-680h-85q-18-40-53-60t-73-20q-51 0-88 27.5T463-660h-46q-31-45-70.5-72.5T260-760q-57 0-98.5 39.5T120-621q0 33 14 67t50 78.5q36 44.5 98 104T440-228q26-23 61-53t56-50l9 9 19.5 19.5L605-283l9 9q-22 20-56 49.5T498-172l-58 52Zm280-160v-120H600v-80h120v-120h80v120h120v80H800v120h-80Z"/>
                         </svg>
                     } @else {
@@ -102,6 +102,25 @@
                         @else {
                             <span class="ml-2 text-sm text-green-400">Desreportar</span>
                         }
+                    </button>
+                }
+                @if (isAuthor || isAdmin) {
+                    <button 
+                        title="Editar artículo"
+                        class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
+                        (click)="editArticle()">
+                        <svg class="fill-current text-gray-400 hover:text-[--button-turquoise] transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                            <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
+                        </svg>
+                    </button>
+
+                    <button 
+                        title="Borrar artículo"
+                        class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
+                        (click)="deleteArticle()">
+                        <svg class="fill-current text-gray-400 hover:text-red-600 transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                        </svg>
                     </button>
                 }
             </div>

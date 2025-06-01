@@ -6,6 +6,7 @@ import { DefaultImageDirective } from '../../shared/directives/default-image.dir
 import { LikeService } from '../services/like.service';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../auth/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-article',
@@ -17,6 +18,7 @@ export class ArticleComponent implements OnInit {
   private articlesService = inject(ArticlesService);
   private likeService = inject(LikeService);
   private authService = inject(AuthService);
+  private router = inject(Router);
   
   article = this.articlesService.singleArticleSignal;
   articleImages = this.articlesService.articleImagesSignal;
@@ -33,9 +35,15 @@ export class ArticleComponent implements OnInit {
   reportDisabled = false;
   unreportLoading = false;
   isAdmin = false;
+  isAuthor = false;
 
   constructor() {
     effect(() => {
+      const article = this.article();
+      if (article) {
+        this.isAuthor = this.authService.username === article.username;
+      }
+
       const images = this.articleImages().get(this.articleId);
       this.imagesLoaded = !!images && images.length > 0;
 
@@ -201,6 +209,55 @@ export class ArticleComponent implements OnInit {
       },
       complete: () => {
         this.unreportLoading = false;
+      }
+    });
+  }
+
+  editArticle(): void {
+    this.router.navigate(['/edit-article', this.articleId]);
+  }
+
+  deleteArticle(): void {
+    Swal.fire({
+      title: '¿Estás segur@?',
+      text: "¡Una vez borrado no podrás recuperarlo!",
+      icon: 'warning',
+      iconColor: '#d32f2f',
+      showCancelButton: true,
+      confirmButtonColor: '#008B8B',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, borrarlo',
+      cancelButtonText: 'Cancelar',
+      background: 'rgba(44, 44, 44, 0.95)',
+      color: '#FFFFFF'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.articlesService.deleteArticle(this.articleId).subscribe({
+          next: () => {
+            Swal.fire({
+              title: '¡Borrado!',
+              text: 'El artículo ha sido eliminado correctamente.',
+              icon: 'success',
+              iconColor: '#008B8B',
+              confirmButtonColor: '#008B8B',
+              background: 'rgba(44, 44, 44, 0.95)',
+              color: '#FFFFFF'
+            });
+            this.router.navigate(['/']);
+          },
+          error: (err) => {
+            console.error('Error al borrar artículo:', err);
+            Swal.fire({
+              title: 'Error!',
+              text: 'No se pudo borrar el artículo.',
+              icon: 'error',
+              iconColor: '#d32f2f',
+              confirmButtonColor: '#008B8B',
+              background: 'rgba(44, 44, 44, 0.95)',
+              color: '#FFFFFF'
+            });
+          }
+        });
       }
     });
   }
