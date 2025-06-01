@@ -203,4 +203,8 @@ export class AuthService {
   isAdmin(): boolean {
     return this._role === 'ADMIN';
   }
+
+  canCreateArticle(): boolean {
+    return ['ADMIN', 'EDITOR'].includes(this._role);
+  }
 }

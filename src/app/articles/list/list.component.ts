@@ -6,6 +6,8 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { ArticlesService } from '../services/articles.service';
 import { CategoriesService } from '../services/categories.service';
 import { forkJoin } from 'rxjs';
+import { AuthService } from '../../auth/services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-list',
@@ -16,6 +18,7 @@ import { forkJoin } from 'rxjs';
 export class ListComponent implements OnInit {
   articlesService = inject(ArticlesService);
   categoriesService = inject(CategoriesService);
+  authService = inject(AuthService);
   private router = inject(Router);
   route = inject(ActivatedRoute);
   imagesMap = this.articlesService.articleImages;
@@ -206,6 +209,19 @@ export class ListComponent implements OnInit {
           this.articlesService.loading.set(false);
         }
       });
+    });
+  }
+
+  showPermissionAlert() {
+    Swal.fire({
+      title: "Acceso denegado (aún)",
+      text: "Necesitas ser ADMIN o EDITOR para crear artículos. ",
+      icon: 'info',
+      iconColor: '#008B8B',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#008B8B',
+      background: 'rgba(44, 44, 44, 0.95)',
+      color: '#FFFFFF'
     });
   }
 }

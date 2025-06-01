@@ -7,6 +7,7 @@ import { ListComponent } from './articles/list/list.component';
 import { ArticleComponent } from './articles/article/article.component';
 import { ProfileComponent } from './user/profile/profile.component';
 import { ArticleFormComponent } from './articles/article-form/article-form.component';
+import { RoleGuard } from './shared/guards/role.guard';
 
 export const routes: Routes = [
     {
@@ -36,7 +37,7 @@ export const routes: Routes = [
         {
         path: 'article-form',
         component: ArticleFormComponent,
-        canActivate: [loginGuard]
+        canActivate: [loginGuard, RoleGuard]
     },
     {
         path: '**',
