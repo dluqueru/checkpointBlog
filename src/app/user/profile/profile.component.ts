@@ -16,10 +16,12 @@ export class ProfileComponent implements OnInit {
   loading = true;
   loadingArticles = false;
   loadingReportedArticles = false;
+  loadingDrafts = false;
   isCurrentUser = false;
   username: string = '';
   likedArticles: any[] = [];
   reportedArticles: any[] = [];
+  drafts: any[] = [];
   likedArticlesCount: number = 0;
 
   constructor(
@@ -36,6 +38,10 @@ export class ProfileComponent implements OnInit {
 
       if (this.authService.isAdmin()) {
         this.loadReportedArticles();
+      }
+
+      if (this.authService.username === this.username) {
+        this.loadDrafts();
       }
     });
   }
@@ -89,6 +95,25 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         console.error('Error cargando artículos reportados:', err);
         this.loadingReportedArticles = false;
+      }
+    });
+  }
+
+  loadDrafts(): void {
+    this.loadingDrafts = true;
+    this.articlesService.getDrafts().subscribe({
+      next: (drafts) => {
+        this.drafts = drafts || [];
+        this.loadingDrafts = false;
+
+        if (this.drafts.length > 0) {
+          this.articlesService.loadImagesForArticles(this.drafts).subscribe();
+          this.articlesService.loadAuthorsForArticles(this.drafts).subscribe();
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando borradores:', err);
+        this.loadingDrafts = false;
       }
     });
   }

@@ -306,4 +306,13 @@ export class ArticlesService {
       })
     );
   }
+
+  getDrafts(): Observable<Article[]> {
+    return this.http.get<Article[]>(`${this.urlBase}/article/drafts`).pipe(
+      catchError(error => {
+        console.error('Error cargando borradores:', error);
+        return of([]);
+      })
+    );
+  }
 }
