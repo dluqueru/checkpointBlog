@@ -40,6 +40,11 @@ export const routes: Routes = [
         canActivate: [loginGuard, RoleGuard]
     },
     {
+        path: 'edit-article/:articleId',
+        component: ArticleFormComponent,
+        canActivate: [loginGuard, RoleGuard]
+    },
+    {
         path: '**',
         redirectTo: ''
     }

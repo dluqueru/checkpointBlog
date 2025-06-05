@@ -1,7 +1,7 @@
-import { HttpClient, HttpEvent, HttpEventType, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { AuthService } from '../../auth/services/auth.service';
-import { Article, ArticlePost, ArticlesResponse, Image } from '../../shared/interfaces/articles';
+import { Article, ArticlePost, ArticlePut, ArticlesResponse, Image } from '../../shared/interfaces/articles';
 import { catchError, finalize, forkJoin, map, Observable, of, tap } from 'rxjs';
 import { User } from '../../shared/interfaces/auth';
 
@@ -241,8 +241,7 @@ export class ArticlesService {
 
   createArticle(articleData: ArticlePost): Observable<Article> {
       const headers = new HttpHeaders({
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.authService.getToken()}`
+          'Content-Type': 'application/json'
       });
 
       return this.http.post<Article>(`${this.urlBase}/article`, articleData, { headers }).pipe(
@@ -267,15 +266,34 @@ export class ArticlesService {
   }
 
   deleteArticle(articleId: number): Observable<void> {
-    const headers = new HttpHeaders({
-      'Authorization': `${this.authService.getToken()}`
-    });
-    
-    return this.http.delete<void>(`${this.urlBase}/article/${articleId}`, { headers }).pipe(
+    return this.http.delete<void>(`${this.urlBase}/article/${articleId}`).pipe(
       tap(() => {
         this.articleListSignal.update(articles => 
           articles.filter(article => article.id !== articleId)
         );
+      })
+    );
+  }
+
+  updateArticle(articleId: number, articleData: ArticlePut): Observable<Article> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.put<Article>(`${this.urlBase}/article/${articleId}`, articleData, { headers }).pipe(
+      tap(updatedArticle => {
+        this.singleArticleSignal.set(updatedArticle);
+        this.articleListSignal.update(articles => 
+          articles.map(article => 
+            article.id === articleId ? updatedArticle : article
+          )
+        );
+      }),
+      catchError(error => {
+        if (error.status === 403) {
+          throw new Error('No tienes permisos para realizar esta acción');
+        }
+        throw error;
       })
     );
   }

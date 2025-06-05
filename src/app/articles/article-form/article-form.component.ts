@@ -1,13 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EnvironmentInjector, OnInit, inject, runInInjectionContext } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ArticlesService } from '../services/articles.service';
 import { QuillModule, QuillModules } from 'ngx-quill';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CategoriesService } from '../services/categories.service';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../auth/services/auth.service';
-import { catchError, map, of, switchMap } from 'rxjs';
-import { ArticlePost } from '../../shared/interfaces/articles';
+import { catchError, map, of, switchMap, forkJoin, finalize } from 'rxjs';
+import { ArticlePost, ArticlePut } from '../../shared/interfaces/articles';
 
 @Component({
   selector: 'app-article-form',
@@ -27,6 +27,13 @@ export class ArticleFormComponent implements OnInit {
   selectedCategories: number[] = [];
   featuredImage: File | null = null;
   selectedImagePreview: string | ArrayBuffer | null = null;
+  isEditMode = false;
+  articleId: number | null = null;
+  existingImages: any[] = [];
+  imagesToDelete: number[] = [];
+  originalAuthor: string = "";
+  originalPublishDate: string | null = null;
+  private injector = inject(EnvironmentInjector);
 
   quillConfig: QuillModules = {
     toolbar: [
@@ -53,7 +60,8 @@ export class ArticleFormComponent implements OnInit {
     private articlesService: ArticlesService,
     private categoriesService: CategoriesService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.articleForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(5)]],
@@ -67,6 +75,38 @@ export class ArticleFormComponent implements OnInit {
         this.categories = response;
       }
     );
+
+    this.route.paramMap.subscribe(params => {
+      const articleId = params.get('articleId');
+      if (articleId) {
+        this.isEditMode = true;
+        this.articleId = +articleId;
+        this.loadArticleForEdit();
+      }
+    });
+  }
+
+  loadArticleForEdit(): void {
+    if (!this.articleId) return;
+
+    this.articlesService.getArticleById(this.articleId);
+
+    const article = this.articlesService.singleArticleSignal();
+    if (!article) return;
+
+    const imagesMap = this.articlesService.articleImagesSignal();
+    const images = imagesMap.get(this.articleId) || [];
+    
+    this.existingImages = images;
+    this.articleForm.patchValue({
+      title: article.title,
+      body: article.body
+    });
+    
+    this.status = article.state as 'DRAFT' | 'DEFINITIVE';
+    this.selectedCategories = article.categories?.map(category => category.categoryId) || [];
+    this.originalPublishDate = article.publishDate;
+    this.originalAuthor = article.username;
   }
 
   onFileSelected(event: Event): void {
@@ -90,6 +130,11 @@ export class ArticleFormComponent implements OnInit {
     if (fileInput) {
       fileInput.value = '';
     }
+  }
+
+  removeExistingImage(imageId: number): void {
+    this.imagesToDelete.push(imageId);
+    this.existingImages = this.existingImages.filter(img => img.id !== imageId);
   }
 
   toggleCategory(categoryId: number): void {
@@ -120,6 +165,123 @@ export class ArticleFormComponent implements OnInit {
     this.isSubmitting = true;
 
     const now = new Date();
+    const formattedDate = now.toISOString();
+
+    if (this.isEditMode && this.articleId) {
+      const articlePutData: ArticlePut = {
+        id: this.articleId,
+        title: this.articleForm.get('title')?.value,
+        body: this.articleForm.get('body')?.value,
+        reported: false,
+        state: this.status,
+        publishDate: this.status === 'DEFINITIVE' 
+          ? (this.originalPublishDate || formattedDate)
+          : null,
+        views: 0,
+        username: this.originalAuthor,
+        categories: this.selectedCategories.map(id => ({
+          categoryId: id,
+          categoryName: this.categories.find(c => c.id === id)?.name || ''
+        }))
+      };
+
+      this.articlesService.updateArticle(this.articleId, articlePutData).pipe(
+        switchMap(article => {
+          if (this.imagesToDelete.length === 0) {
+            return of(article);
+          }
+          
+          const deleteOperations = this.imagesToDelete.map(imageId => 
+            this.articlesService.deleteImage(imageId, article.id).pipe(
+              catchError(error => {
+                console.error('Error eliminando imagen:', error);
+                return of(null);
+              })
+            )
+          );
+
+          return forkJoin(deleteOperations).pipe(
+            map(() => article)
+          );
+        }),
+        switchMap(article => {
+          if (!this.featuredImage) {
+            return of(article);
+          }
+          return this.articlesService.uploadImage(article.id, this.featuredImage).pipe(
+            catchError(error => {
+              console.error('Error subiendo imagen:', error);
+              return of(article);
+            })
+          );
+        }),
+        finalize(() => {
+          this.isSubmitting = false;
+        })
+      ).subscribe({
+        next: (article) => {
+          this.handleSuccess();
+        },
+        error: (error) => {
+          console.error('Error actualizando artículo:', error);
+          this.isSubmitting = false;
+
+          if (error.status === 403) {
+            console.error('Sesión expirada. Por favor vuelve a iniciar sesión.');
+          }
+        }
+      });
+    } else {
+      const articlePostData: ArticlePost = {
+        title: this.articleForm.get('title')?.value,
+        body: this.articleForm.get('body')?.value,
+        reported: false,
+        state: this.status,
+        publishDate: this.status === 'DEFINITIVE' ? this.getFormattedDate() : null,
+        views: 0,
+        user: {
+          username: this.authService.username
+        },
+        articleCategories: this.selectedCategories.map(id => ({
+          category: {
+            id: id
+          }
+        }))
+      };
+
+      this.articlesService.createArticle(articlePostData).pipe(
+        switchMap(article => {
+          if (this.featuredImage) {
+            return this.articlesService.uploadImage(article.id, this.featuredImage).pipe(
+              catchError(() => of(article)),
+              map(() => article)
+            );
+          }
+          return of(article);
+        })
+      ).subscribe({
+        next: (article) => {
+          this.handleSuccess();
+        },
+        error: (error) => {
+          this.isSubmitting = false;
+          console.error('Error:', error);
+        }
+      });
+    }
+  }
+
+  private handleSuccess(): void {
+    this.isSubmitting = false;
+    this.articlesService.articles.set([]);
+    const redirectUrl = this.isEditMode ? `/article/${this.articleId}` : '/article';
+    this.router.navigate([redirectUrl], { 
+      queryParams: { refresh: new Date().getTime() } 
+    });
+  }
+
+  private getFormattedDate(): string {
+    const now = new Date();
     const year = now.getFullYear();
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const day = now.getDate().toString().padStart(2, '0');
@@ -127,51 +289,6 @@ export class ArticleFormComponent implements OnInit {
     const minutes = now.getMinutes().toString().padStart(2, '0');
     const seconds = now.getSeconds().toString().padStart(2, '0');
 
-    const formattedDate = `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
-
-    const articleData: ArticlePost = {
-      title: this.articleForm.get('title')?.value,
-      body: this.articleForm.get('body')?.value,
-      reported: false,
-      state: this.status,
-      publishDate: this.status === 'DEFINITIVE' ? formattedDate : null,
-      views: 0,
-      user: {
-          username: this.authService.username
-      },
-      articleCategories: this.selectedCategories.map(id => ({
-          category: {
-              id: id
-          }
-      }))
-    };
-
-    this.articlesService.createArticle(articleData).pipe(
-      switchMap(article => {
-        if (this.featuredImage) {
-          return this.articlesService.uploadImage(article.id, this.featuredImage).pipe(
-            catchError(() => of(article)),
-            map(() => article)
-          );
-        }
-        return of(article);
-      })
-    ).subscribe({
-      next: (article) => {
-        this.handleSuccess();
-      },
-      error: (error) => {
-        this.isSubmitting = false;
-        console.error('Error:', error);
-      }
-    });
-  }
-
-  private handleSuccess(): void {
-    this.isSubmitting = false;
-    this.articlesService.articles.set([]);
-    this.router.navigate(['/article'], { 
-        queryParams: { refresh: new Date().getTime() } 
-    });
+    return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
   }
 }

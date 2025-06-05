@@ -1,6 +1,8 @@
 <div class="flex relative">
   <div class="flex-1 mx-auto max-w-3xl px-4 lg:px-6 pt-6 overflow-hidden">
-    <h1 class="text-3xl font-bold text-white mb-4">Crear nuevo artículo</h1>
+    <h1 class="text-3xl font-bold text-white mb-4">
+      {{ isEditMode ? 'Editar artículo' : 'Crear nuevo artículo' }}
+    </h1>
     
     <form [formGroup]="articleForm" class="space-y-6 bg-[--sidebar-gray] p-6 rounded-xl shadow-lg border border-[--accent-silver]">
       <div>
@@ -47,6 +49,25 @@
 
       <div>
         <label class="block text-sm font-medium text-gray-300 mb-1">Imagen destacada</label>
+        
+        @if (isEditMode && existingImages.length > 0) {
+          <div class="flex flex-wrap gap-3 mb-3">
+            @for (image of existingImages; track image.id) {
+              <div class="relative group">
+                <img [src]="image.imageUrl" alt="Imagen existente" class="h-24 w-24 object-cover rounded-md">
+                <button 
+                  type="button"
+                  (click)="removeExistingImage(image.id)"
+                  class="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="#e8eaed">
+                    <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+        
         <div class="flex items-center gap-3">
           <div class="relative">
             <input 
@@ -59,7 +80,9 @@
               <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#e8eaed">
                 <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h360v80H200v560h560v-360h80v360q0 33-23.5 56.5T760-120H200Zm160-160v-80h80v80h-80Zm160-160v-80h80v80h-80Zm160-160v-80h80v80h-80ZM600-600v-80h80v80h-80Zm80 80v80h-80v-80h80Zm-160 0v80h-80v-80h80Zm-160 0v80h-80v-80h80Zm80-160v-80h80v80h-80Zm160 0v-80h80v80h-80ZM360-360Z"/>
               </svg>
-              <span class="text-gray-300">Seleccionar imagen</span>
+              <span class="text-gray-300">
+                {{ isEditMode ? 'Añadir nueva imagen' : 'Seleccionar imagen' }}
+              </span>
             </label>
           </div>
           @if (selectedImagePreview) {
@@ -111,7 +134,7 @@
             </svg>
             Guardando...
           } @else {
-            Guardar borrador
+            {{ isEditMode ? 'Actualizar borrador' : 'Guardar borrador' }}
           }
         </button>
         <button 
@@ -126,7 +149,7 @@
             </svg>
             Publicando...
           } @else {
-            Publicar
+            {{ isEditMode ? 'Actualizar artículo' : 'Publicar' }}
           }
         </button>
       </div>

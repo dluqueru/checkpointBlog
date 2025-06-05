@@ -214,7 +214,11 @@ export class ArticleComponent implements OnInit {
   }
 
   editArticle(): void {
-    this.router.navigate(['/edit-article', this.articleId]);
+    if (!this.articleId) return;
+    
+    this.router.navigate(['/edit-article', this.articleId], {
+      state: { article: this.article() }
+    });
   }
 
   deleteArticle(): void {

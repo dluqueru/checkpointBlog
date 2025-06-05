@@ -32,6 +32,23 @@ export interface ArticlePost {
     }>;
 }
 
+export interface Category {
+    categoryId: number;
+    categoryName: string;
+}
+
+export interface ArticlePut {
+    id: number;
+    title: string;
+    body: string;
+    reported: boolean;
+    state: 'DRAFT' | 'DEFINITIVE';
+    publishDate: string | null;
+    views: number;
+    username: string;
+    categories: Category[];
+}
+
 export interface Image {
     id: number;
     imageUrl: string;
