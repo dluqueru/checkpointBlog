@@ -36,45 +36,42 @@ export class ArticlesService {
     }
 
     if (reset) {
-        this.currentPage = 0;
-        this.hasMore = true;
-        this.consecutiveEmptyLoads = 0;
-        this.articleListSignal.set([]);
-        this.articleImagesSignal.set(new Map());
-        this.articleAuthorMapSignal.set(new Map());
+      this.currentPage = 0;
+      this.hasMore = true;
+      this.consecutiveEmptyLoads = 0;
+      this.articleListSignal.set([]);
+      this.articleImagesSignal.set(new Map());
+      this.articleAuthorMapSignal.set(new Map());
     } else if (!this.hasMore) {
-        return of(undefined).pipe(map(() => {}));
+      return of(undefined).pipe(map(() => {}));
     }
 
     this.loadingSignal.set(true);
-    const nextPage = reset ? 0 : this.currentPage + 1;
+    const nextPage = reset ? 0 : this.currentPage;
 
     const params = new HttpParams()
       .set('page', nextPage.toString())
-      .set('size', '4')
-      .set('sort', 'publishDate,desc');
+      .set('size', '4');
 
     return this.http.get<ArticlesResponse>(`${this.urlBase}/article`, { params }).pipe(
       tap(response => {
-        const articles = response?.articles || [];
-        
-        if (reset) {
-          this.articleListSignal.set(articles);
-          this.articleImagesSignal.set(new Map());
-          this.articleAuthorMapSignal.set(new Map());
-        } else {
-          this.articleListSignal.update(current => [...current, ...articles]);
-        }
+          const articles = response?.articles || [];
+          
+          if (reset) {
+            this.articleListSignal.set(articles);
+          } else {
+            this.articleListSignal.update(current => [...current, ...articles]);
+          }
 
-        this.hasMore = response?.hasNext || false;
-        this.currentPage = response?.currentPage || nextPage;
+          this.hasMore = response?.hasNext || false;
+          this.currentPage = nextPage + 1;
 
-        if (articles.length > 0) {
-          forkJoin([
-            this.loadImagesForArticles(articles),
-            this.loadAuthorsForArticles(articles)
-          ]).subscribe();
-        }
+          if (articles.length > 0) {
+              forkJoin([
+                this.loadImagesForArticles(articles),
+                this.loadAuthorsForArticles(articles)
+              ]).subscribe();
+          }
       }),
       catchError(error => {
         console.error('Error cargando artículos:', error);

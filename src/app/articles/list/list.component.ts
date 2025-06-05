@@ -111,12 +111,8 @@ export class ListComponent implements OnInit {
 
   private loadMoreArticles(): void {
     if (!this.searchQuery && !this.articlesService.loading() && this.articlesService.hasMoreItems) {
-        console.log('Cargando más artículos...');
-        this.articlesService.getArticles().subscribe({
-            next: () => {
-                this.articlesService.articles.update(articles => [...articles]);
-            }
-        });
+      console.log('Cargando más artículos...');
+      this.articlesService.getArticles().subscribe();
     }
   }
 
@@ -151,38 +147,24 @@ export class ListComponent implements OnInit {
     let articles = this.articlesService.articles() || [];
     
     if (!Array.isArray(articles)) {
-        console.error('articles is not an array:', articles);
-        return [];
+      console.error('articles is not an array:', articles);
+      return [];
     }
 
     if (this.selectedCategoryId !== null) {
-        articles = articles.filter(article =>
-            article?.categories?.some(category => category?.categoryId === this.selectedCategoryId)
-        );
+      articles = articles.filter(article =>
+        article?.categories?.some(category => category?.categoryId === this.selectedCategoryId)
+      );
     }
 
     if (this.searchQuery) {
-        const searchTerm = this.searchQuery.toLowerCase();
-        articles = articles.filter(article => 
-            article?.title?.toLowerCase().includes(searchTerm)
-        );
+      const searchTerm = this.searchQuery.toLowerCase();
+      articles = articles.filter(article => 
+        article?.title?.toLowerCase().includes(searchTerm)
+      );
     }
 
-    if (articles.length === 0) return articles;
-
-    switch (this.selectedSort) {
-        case 'oldest':
-            return [...articles].sort((a, b) => 
-                new Date(a.publishDate || 0).getTime() - new Date(b.publishDate || 0).getTime());
-        case 'views_asc':
-            return [...articles].sort((a, b) => (a.views || 0) - (b.views || 0));
-        case 'views_desc':
-            return [...articles].sort((a, b) => (b.views || 0) - (a.views || 0));
-        case 'newest':
-        default:
-            return [...articles].sort((a, b) => 
-                new Date(b.publishDate || 0).getTime() - new Date(a.publishDate || 0).getTime());
-    }
+    return articles;
   }
   
   clearFilters() {
