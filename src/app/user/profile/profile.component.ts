@@ -15,9 +15,11 @@ export class ProfileComponent implements OnInit {
   user: any;
   loading = true;
   loadingArticles = false;
+  loadingReportedArticles = false;
   isCurrentUser = false;
   username: string = '';
   likedArticles: any[] = [];
+  reportedArticles: any[] = [];
   likedArticlesCount: number = 0;
 
   constructor(
@@ -31,6 +33,10 @@ export class ProfileComponent implements OnInit {
       this.username = params['username'];
       this.loadUserProfile();
       this.loadLikedArticles();
+
+      if (this.authService.isAdmin()) {
+        this.loadReportedArticles();
+      }
     });
   }
 
@@ -40,6 +46,7 @@ export class ProfileComponent implements OnInit {
         this.user = userData;
         this.isCurrentUser = this.authService.username === this.username;
         this.loading = false;
+        console.log(userData);
       },
       error: (err) => {
         console.error('Error loading profile:', err);
@@ -64,6 +71,25 @@ export class ProfileComponent implements OnInit {
       error: (err) => {
         console.error('Error loading liked articles:', err);
         this.loadingArticles = false;
+      }
+    });
+  }
+
+  loadReportedArticles(): void {
+    this.loadingReportedArticles = true;
+    this.articlesService.getReportedArticles().subscribe({
+      next: (articles) => {
+        this.reportedArticles = articles || [];
+        this.loadingReportedArticles = false;
+
+        if (this.reportedArticles.length > 0) {
+          this.articlesService.loadImagesForArticles(this.reportedArticles).subscribe();
+          this.articlesService.loadAuthorsForArticles(this.reportedArticles).subscribe();
+        }
+      },
+      error: (err) => {
+        console.error('Error loading reported articles:', err);
+        this.loadingReportedArticles = false;
       }
     });
   }

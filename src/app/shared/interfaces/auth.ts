@@ -16,7 +16,8 @@ export interface UserResponse{
     name: string,
     email: string,
     photo: string,
-    role: string
+    role: string,
+    reputation: number
 }
 
 export interface RegisterResponse{

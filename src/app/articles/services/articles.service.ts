@@ -146,7 +146,7 @@ export class ArticlesService {
         this.loadAuthor(article.username);
       },
       error: (err) => {
-        console.error(`Error loading article ${articleId}:`, err);
+        console.error(`Error cargando artículo ${articleId}:`, err);
         this.loadingSignal.set(false);
       },
       complete: () => this.loadingSignal.set(false)
@@ -212,7 +212,7 @@ export class ArticlesService {
   reportArticle(articleId: number): Observable<Article> {
     return this.http.put<Article>(`${this.urlBase}/article/${articleId}/report`, null).pipe(
       catchError(error => {
-        console.error('Error reporting article:', error);
+        console.error('Error reportando artículo:', error);
         throw error;
       })
     );
@@ -233,7 +233,7 @@ export class ArticlesService {
         );
       }),
       catchError(error => {
-        console.error('Error unreporting article:', error);
+        console.error('Error desreportando artículo:', error);
         throw error;
       })
     );
@@ -294,6 +294,15 @@ export class ArticlesService {
           throw new Error('No tienes permisos para realizar esta acción');
         }
         throw error;
+      })
+    );
+  }
+
+  getReportedArticles(): Observable<Article[]> {
+    return this.http.get<Article[]>(`${this.urlBase}/article/reported`).pipe(
+      catchError(error => {
+        console.error('Error cargando artículos reportados:', error);
+        return of([]);
       })
     );
   }
