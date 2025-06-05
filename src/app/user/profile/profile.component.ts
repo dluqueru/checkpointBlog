@@ -46,10 +46,9 @@ export class ProfileComponent implements OnInit {
         this.user = userData;
         this.isCurrentUser = this.authService.username === this.username;
         this.loading = false;
-        console.log(userData);
       },
       error: (err) => {
-        console.error('Error loading profile:', err);
+        console.error('Error cargando el perfil:', err);
         this.loading = false;
       }
     });
@@ -69,7 +68,7 @@ export class ProfileComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Error loading liked articles:', err);
+        console.error('Error cargando artículos likeados:', err);
         this.loadingArticles = false;
       }
     });
@@ -88,7 +87,7 @@ export class ProfileComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Error loading reported articles:', err);
+        console.error('Error cargando artículos reportados:', err);
         this.loadingReportedArticles = false;
       }
     });

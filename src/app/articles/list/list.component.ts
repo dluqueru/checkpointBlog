@@ -215,7 +215,7 @@ export class ListComponent implements OnInit {
   showPermissionAlert() {
     Swal.fire({
       title: "Acceso denegado (aún)",
-      text: "Necesitas ser ADMIN o EDITOR para crear artículos. ",
+      text: "Puedes alcanzar el rol de EDITOR dando like a 5 artículos. Así podrás crear artículos!",
       icon: 'info',
       iconColor: '#008B8B',
       confirmButtonText: 'Entendido',

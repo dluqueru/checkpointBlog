@@ -59,23 +59,34 @@
             }
 
             <div class="mt-4 text-center">
-                @if (authService.canCreateArticle()) {
-                    <a routerLink="/article-form">
-                    <button title="Escribir artículo" 
-                            class="text-gray-600 hover:text-gray-800 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500">
-                        <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
-                        </svg>
-                    </button>
+                @if (!authService.isLogged()) {
+                    <a routerLink="/login">
+                        <button title="Escribir artículo" 
+                                class="text-gray-600 hover:text-gray-800 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500">
+                            <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                            </svg>
+                        </button>
                     </a>
                 } @else {
-                    <button title="No tienes permisos para crear artículos" 
-                            (click)="showPermissionAlert()"
-                            class="text-gray-600 hover:text-gray-800 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500 cursor-not-allowed opacity-70">
-                    <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
-                    </svg>
-                    </button>
+                    @if (authService.canCreateArticle()) {
+                        <a routerLink="/article-form">
+                        <button title="Escribir artículo" 
+                                class="text-gray-600 hover:text-gray-800 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500">
+                            <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                            </svg>
+                        </button>
+                        </a>
+                    } @else {
+                        <button title="No tienes permisos para crear artículos" 
+                                (click)="showPermissionAlert()"
+                                class="text-gray-600 hover:text-gray-800 transition-all duration-300 ease-in-out hover:bg-[--vibrant-purple] hover:shadow-md rounded-full p-1 ring-2 ring-gray-500 cursor-not-allowed opacity-70">
+                        <svg stroke="currentColor" viewBox="0 0 24 24" fill="none" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                        </svg>
+                        </button>
+                    }
                 }
             </div>
         </div>
@@ -131,7 +142,9 @@
                         } @else if (selectedCategoryId) {
                             No se encontraron artículos para esta categoría.
                         } @else {
-                            No hay artículos disponibles.
+                            <div class="flex justify-center items-center my-8">
+                                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[--button-turquoise]"></div>
+                            </div>
                         }
                     </p>
                     @if (searchQuery || selectedCategoryId) {

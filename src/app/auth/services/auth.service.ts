@@ -1,6 +1,6 @@
 import { HttpClient, HttpEventType, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { catchError, map, Observable, of, pipe, tap } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, pipe, tap } from 'rxjs';
 import { LoginResponse, RegisterResponse, Token, User, UserResponse } from '../../shared/interfaces/auth';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
@@ -18,6 +18,8 @@ export class AuthService {
   private isLoggedSignal = signal<boolean>(false);
   private router: Router = inject(Router);
   public redirectUrl: string | null = null;
+  private roleSubject = new BehaviorSubject<string>(this._role);
+  public currentRole$ = this.roleSubject.asObservable();
 
   constructor() {
     let username = localStorage.getItem('username');
@@ -206,5 +208,11 @@ export class AuthService {
 
   canCreateArticle(): boolean {
     return ['ADMIN', 'EDITOR'].includes(this._role);
+  }
+
+  updateRole(newRole: string): void {
+    this._role = newRole;
+    this.roleSubject.next(newRole);
+    localStorage.setItem('role', newRole);
   }
 }
