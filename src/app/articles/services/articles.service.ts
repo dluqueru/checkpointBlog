@@ -11,7 +11,7 @@ import { User } from '../../shared/interfaces/auth';
 export class ArticlesService {
   private http: HttpClient = inject(HttpClient);
   private authService: AuthService = inject(AuthService);
-  private urlBase: string = 'http://localhost:8080';
+  private urlBase: string = 'https://api-2425-dluqueru-javaclean.onrender.com';
 
   private articleListSignal = signal<Article[]>([]);
   articleImagesSignal = signal<Map<number, Image[]>>(new Map());
