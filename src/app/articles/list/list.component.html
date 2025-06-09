@@ -19,7 +19,7 @@
                     <label for="sortSelect" class="block text-white text-sm mb-2">Ordenar por:</label>
                     <select id="sortSelect" 
                             [(ngModel)]="selectedSort" 
-                            (change)="onSortChange()"
+                            (ngModelChange)="onSortChange($event)"
                             class="w-full rounded-md border border-[--accent-silver] px-3 py-2 text-sm bg-[--sidebar-gray] text-white">
                         <option value="newest">Más recientes</option>
                         <option value="oldest">Más antiguos</option>

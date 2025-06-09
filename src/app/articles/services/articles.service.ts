@@ -20,8 +20,6 @@ export class ArticlesService {
   singleArticleSignal = signal<Article | null>(null);
   private currentPage = 0;
   private hasMore = true;
-  private consecutiveEmptyLoads = 0;
-  private maxConsecutiveEmptyLoads = 3;
 
   get articles() { return this.articleListSignal; }
   get articleImages() { return this.articleImagesSignal; }
@@ -38,7 +36,6 @@ export class ArticlesService {
     if (reset) {
       this.currentPage = 0;
       this.hasMore = true;
-      this.consecutiveEmptyLoads = 0;
       this.articleListSignal.set([]);
       this.articleImagesSignal.set(new Map());
       this.articleAuthorMapSignal.set(new Map());
@@ -76,6 +73,55 @@ export class ArticlesService {
       catchError(error => {
         console.error('Error cargando artículos:', error);
         this.hasMore = false;
+        return of(undefined);
+      }),
+      finalize(() => {
+        this.loadingSignal.set(false);
+      }),
+      map(() => {})
+    );
+  }
+
+  getFilteredArticles(
+    categoryId: number | null,
+    sortBy: string = 'date',
+    sortDirection: string = 'desc',
+    reset: boolean = false
+  ): Observable<void> {
+    if (this.loadingSignal()) {
+      return of(undefined).pipe(map(() => {}));
+    }
+
+    if (reset) {
+      this.resetPagination();
+    }
+
+    this.loadingSignal.set(true);
+
+    let endpoint: string;
+    let params = new HttpParams()
+      .set('sortBy', sortBy)
+      .set('sortDirection', sortDirection);
+
+    if (categoryId) {
+      endpoint = `${this.urlBase}/article/category/${categoryId}`;
+    } else {
+      endpoint = `${this.urlBase}/article/sorted`;
+    }
+
+    return this.http.get<Article[]>(endpoint, { params }).pipe(
+      tap(articles => {
+        this.articleListSignal.set(articles);
+        
+        if (articles.length > 0) {
+          forkJoin([
+            this.loadImagesForArticles(articles),
+            this.loadAuthorsForArticles(articles)
+          ]).subscribe();
+        }
+      }),
+      catchError(error => {
+        console.error('Error cargando artículos filtrados:', error);
         return of(undefined);
       }),
       finalize(() => {
@@ -255,7 +301,6 @@ export class ArticlesService {
   resetPagination(): void {
     this.currentPage = 0;
     this.hasMore = true;
-    this.consecutiveEmptyLoads = 0;
     this.articleListSignal.set([]);
     this.articleImagesSignal.set(new Map());
     this.articleAuthorMapSignal.set(new Map());

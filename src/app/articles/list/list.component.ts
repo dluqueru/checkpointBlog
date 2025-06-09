@@ -34,6 +34,20 @@ export class ListComponent implements OnInit {
     this.loadCategories();
     this.setupSearchListener();
     this.loadInitialArticles();
+    this.checkInitialParams();
+  }
+
+  private checkInitialParams(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['sort']) {
+        this.selectedSort = params['sort'];
+        this.applyFilters(true);
+      }
+      if (params['category']) {
+        this.selectedCategoryId = Number(params['category']);
+        this.applyFilters(true);
+      }
+    });
   }
 
   private loadInitialArticles(): void {
@@ -90,15 +104,20 @@ export class ListComponent implements OnInit {
 
   @HostListener('window:scroll', ['$event'])
   onScroll(): void {
+    if (this.selectedCategoryId || this.selectedSort !== 'newest' || this.searchQuery) {
+      return;
+    }
+
     const now = Date.now();
     if (now - this.lastLoadTime < this.loadDebounceTime) {
-        return;
+      return;
     }
-    
-    if (this.isNearBottom() && !this.articlesService.loading() && this.articlesService.hasMoreItems) {
-        console.log('Activando carga de más artículos...');
-        this.lastLoadTime = now;
-        this.loadMoreArticles();
+
+    if (this.isNearBottom() && 
+        !this.articlesService.loading() && 
+        this.articlesService.hasMoreItems) {
+      this.lastLoadTime = now;
+      this.loadMoreArticles();
     }
   }
 
@@ -110,10 +129,11 @@ export class ListComponent implements OnInit {
   }
 
   private loadMoreArticles(): void {
-    if (!this.searchQuery && !this.articlesService.loading() && this.articlesService.hasMoreItems) {
-      console.log('Cargando más artículos...');
-      this.articlesService.getArticles().subscribe();
+    if (this.articlesService.loading() || !this.articlesService.hasMoreItems) {
+      return;
     }
+
+    this.articlesService.getArticles().subscribe();
   }
 
   loadCategories(): void {
@@ -124,13 +144,80 @@ export class ListComponent implements OnInit {
   }
 
   onCategorySelected(): void {
-    this.articlesService.loading.set(true);
-    this.articlesService.getArticles(true).subscribe({
-      complete: () => this.articlesService.loading.set(false)
+    this.updateUrlParams();
+    this.applyFilters(true);
+  }
+
+  onSortChange(newValue: string): void {
+    this.selectedSort = newValue;
+    this.updateUrlParams();
+    this.applyFilters(true);
+  }
+
+  private updateUrlParams(): void {
+    const queryParams: any = {};
+    
+    if (this.selectedSort !== 'newest') {
+      queryParams['sort'] = this.selectedSort;
+    }
+    
+    if (this.selectedCategoryId) {
+      queryParams['category'] = this.selectedCategoryId;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: queryParams,
+      queryParamsHandling: 'merge',
+      replaceUrl: true
     });
   }
 
-  onSortChange(): void {
+
+private applyFilters(reset: boolean): void {
+  const sortParams = this.getSortParameters();
+
+  this.articlesService.getFilteredArticles(
+    this.selectedCategoryId,
+    sortParams.sortBy,
+    sortParams.sortDirection,
+    reset
+    ).subscribe({
+      next: () => {
+      },
+      error: (err) => {
+        console.error('Error al aplicar filtros:', err);
+      },
+      complete: () => {
+        this.articlesService.loading.set(false);
+      }
+    });
+  }
+
+  private getSortParameters(): { sortBy: string, sortDirection: string } {
+    let sortBy = 'date';
+    let sortDirection = 'desc';
+    
+    switch (this.selectedSort) {
+      case 'newest':
+        sortBy = 'date';
+        sortDirection = 'desc';
+        break;
+      case 'oldest':
+        sortBy = 'date';
+        sortDirection = 'asc';
+        break;
+      case 'views_desc':
+        sortBy = 'views';
+        sortDirection = 'desc';
+        break;
+      case 'views_asc':
+        sortBy = 'views';
+        sortDirection = 'asc';
+        break;
+    }
+    
+    return { sortBy, sortDirection };
   }
 
   getMainImageForArticle(articleId: number): string | undefined {
@@ -173,7 +260,6 @@ export class ListComponent implements OnInit {
     this.searchQuery = '';
 
     this.articlesService.loading.set(true);
-
     this.articlesService.resetPagination();
 
     this.router.navigate([], { 
