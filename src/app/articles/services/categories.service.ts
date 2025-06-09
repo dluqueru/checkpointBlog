@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class CategoriesService {
 
   private http: HttpClient = inject(HttpClient);
-  private urlBase: string = 'http://localhost:8080';
+  private urlBase: string = 'https://api-2425-dluqueru-javaclean.onrender.com';
 
   getCategories(): Observable<{id: number, name: string}[]> {
     return this.http.get<{id: number, name: string}[]>(`${this.urlBase}/category`);

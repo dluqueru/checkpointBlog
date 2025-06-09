@@ -11,7 +11,7 @@ import { jwtDecode } from 'jwt-decode';
 export class AuthService {
 
   private http: HttpClient = inject(HttpClient);
-  private baseUrl: string = 'http://localhost:8080';
+  private baseUrl: string = 'https://api-2425-dluqueru-javaclean.onrender.com';
   private _username: string = '';
   private _role: string = '';
   private _photo: string = '';

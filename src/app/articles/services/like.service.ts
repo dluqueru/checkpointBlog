@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
   providedIn: 'root'
 })
 export class LikeService {
-  private urlBase: string = 'http://localhost:8080/likes';
+  private urlBase: string = 'https://api-2425-dluqueru-javaclean.onrender.com/likes';
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 
