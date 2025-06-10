@@ -33,7 +33,7 @@
             }
         </div>
 
-        <div class="items-center pr-8">
+        <div class="items-center md:pr-8">
             <form (submit)="searchArticles($event)" class="max-w-[480px] w-full px-4">
                 <div class="relative">
                     <input type="text" name="q" [(ngModel)]="searchQuery" 
@@ -54,13 +54,13 @@
         </div>
 
         @if (authService.isLogged()) {
-            <div class="flex items-center md:space-x-4 order-last ml-2 md:ml-0">
+            <div class="flex items-center space-x-2 md:space-x-4 order-last ml-2 md:ml-0">
                 <img 
                     routerLink="/user/{{authService.username}}"
                     [src]="authService.photo"
                     [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
                     alt="Foto de perfil"
-                    class="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full border-2 border-[--accent-silver] dark:border-gray-600 hover:cursor-pointer aspect-square flex-shrink-0"
+                    class="w-10 h-10 object-cover rounded-full border-2 border-[--accent-silver] dark:border-gray-600 hover:cursor-pointer aspect-square flex-shrink-0"
                 />
                 <a routerLink="/user/{{authService.username}}" title="Ir a tu perfil" class="hidden md:inline">
                     <span class="text-gray-300 hover:text-white transition-colors duration-300 hover:cursor-pointer">
