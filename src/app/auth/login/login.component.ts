@@ -44,4 +44,17 @@ export class LoginComponent {
         })
       });
   }
+
+  showMessage(){
+    Swal.fire({
+      title: "Funcionalidad no disponible (aún)",
+      text: "Contacta con el administrador para que resetee tu contraseña",
+      icon: 'info',
+      iconColor: '#008B8B',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#008B8B',
+      background: 'rgba(44, 44, 44, 0.95)',
+      color: '#FFFFFF'
+    });
+  }
 }
