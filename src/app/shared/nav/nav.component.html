@@ -54,17 +54,16 @@
         </div>
 
         @if (authService.isLogged()) {
-            <div class="flex items-center space-x-4 order-last">
-                <a routerLink="/user/{{authService.username}}" title="Ir a tu perfil">
-                    <img 
-                        [src]="authService.photo"
-                        [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
-                        alt="Foto de perfil"
-                        class="w-10 h-10 object-cover rounded-full border-2 border-[--accent-silver] dark:border-gray-600 hover:cursor-pointer"
-                    />
-                </a>
-                <a routerLink="/user/{{authService.username}}" title="Ir a tu perfil">
-                    <span class="hidden md:inline text-gray-300 hover:text-white transition-colors duration-300 hover:cursor-pointer">
+            <div class="flex items-center md:space-x-4 order-last ml-2 md:ml-0">
+                <img 
+                    routerLink="/user/{{authService.username}}"
+                    [src]="authService.photo"
+                    [appDefaultImage]="'assets/images/avatarDefaultImage.jpg'"
+                    alt="Foto de perfil"
+                    class="w-8 h-8 md:w-10 md:h-10 object-cover rounded-full border-2 border-[--accent-silver] dark:border-gray-600 hover:cursor-pointer aspect-square flex-shrink-0"
+                />
+                <a routerLink="/user/{{authService.username}}" title="Ir a tu perfil" class="hidden md:inline">
+                    <span class="text-gray-300 hover:text-white transition-colors duration-300 hover:cursor-pointer">
                         {{authService.username}} 
                     </span>
                 </a>
