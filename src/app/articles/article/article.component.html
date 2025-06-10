@@ -15,12 +15,12 @@
                     <circle cx="1" cy="1" r="1"></circle>
                 </svg>
                 <div class="flex gap-x-2.5 items-center text-m">
-                    <a routerLink="/user/{{ article()?.username }}">
+                    <a routerLink="/user/{{ article()?.username }}" class="flex items-center">
                         <img
                             [src]="getAuthorAvatar(article()?.username)"
                             alt="Avatar de autor" 
                             class="h-10 w-10 flex-none object-cover rounded-full bg-white/10">
-                        {{ article()?.username }}
+                        <span class="ml-2">{{ article()?.username }}</span>
                     </a>
                 </div>
             </div>
@@ -51,19 +51,19 @@
                             <path d="M480-120l-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Z"/>
                         }
                     </svg>
-                    <span class="ml-2 text-sm text-gray-300">{{ likes }} Likes</span>
+                    <span class="ml-2 text-sm text-gray-300">{{ likes }}</span><span class="ml-2 text-sm text-gray-300 hidden sm:inline"> Likes</span>
                 </button>
 
                 <button title="Visualizaciones totales" class="navigator flex items-center border border-gray-300 shadow p-2 rounded-lg hover:cursor-default">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
                         <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z"/>
                     </svg>
-                    <span class="ml-2 text-sm text-gray-300">{{ article()?.views }} Views</span>
+                    <span class="ml-2 text-sm text-gray-300">{{ article()?.views }}</span><span class="ml-2 text-sm text-gray-300 hidden sm:inline"> Views</span>
                 </button>
 
                 <button 
                     title="{{ isReported ? 'Artículo reportado' : 'Reportar artículo' }}" 
-                    class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
+                    class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg sm:order-4 order-1" 
                     (click)="reportArticle()"
                     [disabled]="reportDisabled || reportLoading"
                     [class.opacity-50]="reportDisabled"
@@ -79,7 +79,7 @@
                         <span class="ml-2 text-sm">Reportando...</span>
                     }
                     @else if (isReported) {
-                        <span class="ml-2 text-sm text-red-400">Reportado</span>
+                        <span class="ml-2 text-sm text-red-400 hidden sm:inline">Reportado</span>
                     }
                 </button>
 
@@ -102,7 +102,7 @@
                             <span class="ml-2 text-sm">Desreportando...</span>
                         }
                         @else {
-                            <span class="ml-2 text-sm text-green-400">Desreportar</span>
+                            <span class="ml-2 text-sm text-green-400 hidden sm:inline">Desreportar</span>
                         }
                     </button>
                 }
