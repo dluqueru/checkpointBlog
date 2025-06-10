@@ -1,16 +1,16 @@
 import { Component, Input, OnInit, inject, effect } from '@angular/core';
 import { ArticlesService } from '../services/articles.service';
 import { DatePipe } from '@angular/common';
-import { FormatParagraphsPipe } from '../../format-paragraphs.pipe';
 import { DefaultImageDirective } from '../../shared/directives/default-image.directive';
 import { LikeService } from '../services/like.service';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../auth/services/auth.service';
 import { Router } from '@angular/router';
+import { QuillViewComponent } from 'ngx-quill';
 
 @Component({
   selector: 'app-article',
-  imports: [DatePipe, FormatParagraphsPipe, DefaultImageDirective],
+  imports: [DatePipe, DefaultImageDirective, QuillViewComponent],
   templateUrl: './article.component.html'
 })
 export class ArticleComponent implements OnInit {

@@ -17,7 +17,7 @@ export class FormatParagraphsPipe implements PipeTransform {
       .replace(/<img/g, '<img class="max-w-full h-auto rounded-lg my-4"');
 
     processed = processed
-      .replace(/<p>/g, '<p class="mb-4 text-justify hyphens-auto overflow-wrap-break-word word-break-break-word">')
+      .replace(/<p>/g, '<p class="mb-4 text-justify break-words hyphens-auto">')
       .replace(/<ul>/g, '<ul class="list-disc pl-8 mb-6">')
       .replace(/<ol>/g, '<ol class="list-decimal pl-8 mb-6">')
       .replace(/<li>/g, '<li class="mb-2 text-left">')
