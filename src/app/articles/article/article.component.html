@@ -171,12 +171,11 @@
 
         <div class="mx-auto max-w-2xl lg:max-w-4xl">
             <div class="bg-white/5 p-6 rounded-2xl shadow-lg">
-                <div class="prose prose-invert max-w-none 
-                            text-lg lg:text-xl 
-                            prose-headings:text-2xl lg:prose-headings:text-3xl
-                            leading-relaxed space-y-4">
-                <quill-view [content]="article()?.body"></quill-view>
-                </div>
+                <quill-view 
+                [content]="article()?.body"
+                [theme]="'bubble'"
+                class="[&_.ql-container]:border-none [&_.ql-container]:bg-transparent"
+                ></quill-view>
             </div>
         </div>
     </div>
