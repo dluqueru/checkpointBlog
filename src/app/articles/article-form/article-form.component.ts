@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../auth/services/auth.service';
 import { catchError, map, of, switchMap, forkJoin, finalize } from 'rxjs';
 import { ArticlePost, ArticlePut } from '../../shared/interfaces/articles';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-article-form',
@@ -220,10 +221,30 @@ export class ArticleFormComponent implements OnInit {
         })
       ).subscribe({
         next: (article) => {
+          Swal.fire({
+            title: "Artículo actualizado",
+            text: "El artículo fue editado con éxito",
+            icon: 'success',
+            iconColor: '#008B8B',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#008B8B',
+            background: 'rgba(44, 44, 44, 0.95)',
+            color: '#FFFFFF'
+          });
           this.handleSuccess();
         },
         error: (error) => {
           console.error('Error actualizando artículo:', error);
+          Swal.fire({
+            title: 'Error!',
+            text: "Ocurrió un error al actualizar tu artículo.",
+            icon: 'error',
+            iconColor: '#d32f2f',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#008B8B',
+            background: 'rgba(44, 44, 44, 0.95)',
+            color: '#FFFFFF'
+          })
           this.isSubmitting = false;
 
           if (error.status === 403) {
@@ -261,9 +282,29 @@ export class ArticleFormComponent implements OnInit {
         })
       ).subscribe({
         next: (article) => {
+          Swal.fire({
+            title: "Artículo creado",
+            text: "Artículo creado con éxito",
+            icon: 'success',
+            iconColor: '#008B8B',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#008B8B',
+            background: 'rgba(44, 44, 44, 0.95)',
+            color: '#FFFFFF'
+          });
           this.handleSuccess();
         },
         error: (error) => {
+          Swal.fire({
+            title: 'Error!',
+            text: "Ocurrió un error al crear tu artículo.",
+            icon: 'error',
+            iconColor: '#d32f2f',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#008B8B',
+            background: 'rgba(44, 44, 44, 0.95)',
+            color: '#FFFFFF'
+          })
           this.isSubmitting = false;
           console.error('Error:', error);
         }

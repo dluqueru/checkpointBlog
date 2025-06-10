@@ -5,12 +5,12 @@ import { DefaultImageDirective } from '../../shared/directives/default-image.dir
 import { LikeService } from '../services/like.service';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../auth/services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { QuillViewComponent } from 'ngx-quill';
 
 @Component({
   selector: 'app-article',
-  imports: [DatePipe, DefaultImageDirective, QuillViewComponent],
+  imports: [DatePipe, DefaultImageDirective, QuillViewComponent, RouterLink],
   templateUrl: './article.component.html'
 })
 export class ArticleComponent implements OnInit {

@@ -15,11 +15,13 @@
                     <circle cx="1" cy="1" r="1"></circle>
                 </svg>
                 <div class="flex gap-x-2.5 items-center text-m">
-                    <img
-                        [src]="getAuthorAvatar(article()?.username)"
-                        alt="Avatar de autor" 
-                        class="h-10 w-10 flex-none object-cover rounded-full bg-white/10">
-                    {{ article()?.username }}
+                    <a routerLink="/user/{{ article()?.username }}">
+                        <img
+                            [src]="getAuthorAvatar(article()?.username)"
+                            alt="Avatar de autor" 
+                            class="h-10 w-10 flex-none object-cover rounded-full bg-white/10">
+                        {{ article()?.username }}
+                    </a>
                 </div>
             </div>
 

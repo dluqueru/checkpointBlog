@@ -30,7 +30,7 @@ export class LikeService {
                       color: '#FFFFFF'
                     });
               }
-            this.authService.updateRole(userData.role)
+            this.authService.updateRole("EDITOR")
           },
           error: (err) => {
             console.error('Error actualizando datos de usuario', err);

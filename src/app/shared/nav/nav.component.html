@@ -27,7 +27,7 @@
 
         <div class="hidden md:flex space-x-8 mx-auto">
             <a routerLink="/" (click)="closeMobileMenu()" (click)="navigateToHome()" class="nav-link text-gray-300 hover:text-white px-3 py-1">Inicio</a>
-            <a href="#" class="nav-link text-gray-300 hover:text-white px-3 py-1">Historial</a>
+            <!-- <a href="#" class="nav-link text-gray-300 hover:text-white px-3 py-1">Historial</a> -->
             @if (!authService.isLogged()) {
                 <a routerLink="/register" class="text-gray-300 hover:text-white px-3 py-1">Registro</a>
             }
@@ -111,11 +111,11 @@
                class="block text-gray-300 hover:text-white py-2 transition-colors">
                Inicio
             </a>
-            <a href="#" 
+            <!-- <a href="#" 
                (click)="closeMobileMenu()"
                class="block text-gray-300 hover:text-white py-2 transition-colors">
                Historial
-            </a>
+            </a> -->
             @if (!authService.isLogged()) {
                 <a routerLink="/register" 
                    (click)="closeMobileMenu()"
