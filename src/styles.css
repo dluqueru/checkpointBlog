@@ -363,3 +363,19 @@ select option:hover {
   border-radius: 0.5rem;
   overflow-x: auto;
 }
+
+.hyphens-auto {
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+}
+
+.overflow-wrap-break-word {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.word-break-break-word {
+  word-break: break-word;
+}

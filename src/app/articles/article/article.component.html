@@ -171,7 +171,8 @@
 
         <div class="mx-auto max-w-2xl lg:max-w-4xl">
             <div class="bg-white/5 p-6 rounded-2xl shadow-lg">
-                <div class="ql-content prose prose-invert max-w-none" [innerHTML]="(article()?.body ?? '') | formatParagraphs"></div>
+                <div class="ql-content prose prose-invert max-w-none" 
+                    [innerHTML]="(article()?.body ?? '') | formatParagraphs"></div>
             </div>
         </div>
     </div>
