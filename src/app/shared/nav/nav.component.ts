@@ -4,6 +4,7 @@ import { AuthService } from '../../auth/services/auth.service';
 import { DefaultImageDirective } from '../directives/default-image.directive';
 import { ArticlesService } from '../../articles/services/articles.service';
 import { FormsModule } from '@angular/forms';
+import { ListComponent } from '../../articles/list/list.component';
 
 @Component({
   selector: 'app-nav',
@@ -14,6 +15,7 @@ export class NavComponent implements AfterViewInit {
   authService = inject(AuthService);
   router = inject(Router);
   articlesService = inject(ArticlesService);
+  listComponent = inject(ListComponent)
   isMobileMenuOpen = false;
   searchQuery = '';
   private mobileMenu: HTMLElement | null = null;
@@ -66,6 +68,8 @@ export class NavComponent implements AfterViewInit {
     event.preventDefault();
     if (this.searchQuery.trim()) {
       this.articlesService.resetPagination();
+      this.listComponent.selectedCategoryId = null;
+      this.listComponent.selectedSort = 'newest';
       this.router.navigate(['/'], { 
         queryParams: { search: this.searchQuery.trim() },
         queryParamsHandling: 'merge'
