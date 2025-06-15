@@ -23,14 +23,13 @@
                             <span class="ml-2">{{ article()?.username }}</span>
                         </a>
                     </div>
-                    <button 
-                        title="{{ isReported ? 'Artículo reportado' : 'Reportar artículo' }}" 
-                        class="navigator flex flex-col items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg sm:order-4 order-1"
-                        (click)="reportArticle()"
-                        [disabled]="reportDisabled || reportLoading"
-                        [class.opacity-50]="reportDisabled"
-                        [class.cursor-not-allowed]="reportDisabled">
-                        
+                        <button 
+                            title="{{ isReported ? 'Artículo reportado' : 'Reportar artículo' }}" 
+                            class="navigator flex flex-col items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg lg:hidden"
+                            (click)="reportArticle()"
+                            [disabled]="reportDisabled || reportLoading"
+                            [class.opacity-50]="reportDisabled"
+                            [class.cursor-not-allowed]="reportDisabled">
                         <svg class="fill-current text-gray-400 hover:text-yellow-600 transition-colors duration-300 mb-1" 
                             xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
                             [attr.fill]="isReported ? '#ef4444' : '#e8eaed'">
