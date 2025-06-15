@@ -82,8 +82,8 @@
                     </button>
     
                     <button 
-                        title="{{ isReported ? 'Artículo reportado' : 'Reportar artículo' }}" 
-                        class="navigator flex flex-col items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg sm:order-4 order-1 hidden sm:inline" 
+                        title="{{ isReported ? 'Artículo reportado' : 'Reportar artículo' }}"
+                        class="navigator flex flex-col items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg sm:hidden"
                         (click)="reportArticle()"
                         [disabled]="reportDisabled || reportLoading"
                         [class.opacity-50]="reportDisabled"
