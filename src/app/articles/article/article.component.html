@@ -4,204 +4,213 @@
             <div class="flex justify-center items-center my-8">
                 <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[--button-turquoise]"></div>
             </div>
-        }
-        <div class="mx-auto max-w-2xl text-center mb-4">
-            <h1 class="text-4xl font-bold text-white mb-2">{{ article()?.title }}</h1>
-            <div class="flex items-center justify-center gap-x-4 text-gray-300">
-                <time [attr.datetime]="article()?.publishDate" class="text-sm">
-                    {{ article()?.publishDate | date:'MMM d, y' }}
-                </time>
-                <svg viewBox="0 0 2 2" class="h-0.5 w-0.5 flex-none fill-white/50">
-                    <circle cx="1" cy="1" r="1"></circle>
-                </svg>
-                <div class="flex gap-x-2.5 items-center text-m">
-                    <a routerLink="/user/{{ article()?.username }}" class="flex items-center">
-                        <img
-                            [src]="getAuthorAvatar(article()?.username)"
-                            alt="Avatar de autor" 
-                            class="h-10 w-10 flex-none object-cover rounded-full bg-white/10">
-                        <span class="ml-2">{{ article()?.username }}</span>
-                    </a>
-                </div>
-                <button 
-                    title="{{ isReported ? 'Artículo reportado' : 'Reportar artículo' }}" 
-                    class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg sm:order-4 order-1 block sm:hidden" 
-                    (click)="reportArticle()"
-                    [disabled]="reportDisabled || reportLoading"
-                    [class.opacity-50]="reportDisabled"
-                    [class.cursor-not-allowed]="reportDisabled">
-                    
-                    <svg class="fill-current text-gray-400 hover:text-yellow-600 transition-colors duration-300" 
-                        xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
-                        [attr.fill]="isReported ? '#ef4444' : '#e8eaed'">
-                        <path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240ZM330-120 120-330v-300l210-210h300l210 210v300L630-120H330Zm34-80h232l164-164v-232L596-760H364L200-596v232l164 164Zm116-280Z"/>
+        } @else if (article()) {
+            <div class="mx-auto max-w-2xl text-center mb-4">
+                <h1 class="text-4xl font-bold text-white mb-2">{{ article()?.title }}</h1>
+                <div class="flex items-center justify-center gap-x-4 text-gray-300">
+                    <time [attr.datetime]="article()?.publishDate" class="text-sm">
+                        {{ article()?.publishDate | date:'MMM d, y' }}
+                    </time>
+                    <svg viewBox="0 0 2 2" class="h-0.5 w-0.5 flex-none fill-white/50">
+                        <circle cx="1" cy="1" r="1"></circle>
                     </svg>
-                    
-                    @if (reportLoading) {
-                        <span class="ml-2 text-sm">Reportando...</span>
-                    }
-                    @else if (isReported) {
-                        <span class="ml-2 text-sm text-red-400 hidden sm:inline">Reportado</span>
-                    }
-                </button>
-            </div>
-
-            <div class="flex items-center justify-center mt-3 space-x-6">
-                <button 
-                    title="Like" class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
-                    (click)="toggleLike()">
-                    @if(!isLiked) {
-                        <svg class="fill-current text-gray-400 hover:text-[--vibrant-purple] transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-                            <path d="M440-501Zm0 381L313-234q-72-65-123.5-116t-85-96q-33.5-45-49-87T40-621q0-94 63-156.5T260-840q52 0 99 22t81 62q34-40 81-62t99-22q81 0 136 45.5T831-680h-85q-18-40-53-60t-73-20q-51 0-88 27.5T463-660h-46q-31-45-70.5-72.5T260-760q-57 0-98.5 39.5T120-621q0 33 14 67t50 78.5q36 44.5 98 104T440-228q26-23 61-53t56-50l9 9 19.5 19.5L605-283l9 9q-22 20-56 49.5T498-172l-58 52Zm280-160v-120H600v-80h120v-120h80v120h120v80H800v120h-80Z"/>
-                        </svg>
-                    } @else {
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-                            <path d="M440-501Zm0 381L313-234q-72-65-123.5-116t-85-96q-33.5-45-49-87T40-621q0-94 63-156.5T260-840q52 0 99 22t81 62q34-40 81-62t99-22q84 0 153 59t69 160q0 14-2 29.5t-6 31.5h-85q5-18 8-34t3-30q0-75-50-105.5T620-760q-51 0-88 27.5T463-660h-46q-31-45-70.5-72.5T260-760q-57 0-98.5 39.5T120-621q0 33 14 67t50 78.5q36 44.5 98 107T440-228q26-23 61-53t56-50l9 9 19.5 19.5L605-283l9 9q-22 20-56 49.5T498-172l-58 52Zm160-280v-80h320v80H600Z"/>
-                        </svg>
-                    }
-                </button>
-
-                <button title="Likes totales" class="navigator flex items-center border border-gray-300 shadow p-2 rounded-lg hover:cursor-default">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
-                         class="heart-icon"
-                         [class.heart-animate]="isLiked"
-                         [attr.fill]="isLiked ? '#6A0DAD' : '#e8eaed'">
-                        @if(!isLiked) {
-                            <path d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Zm0-108q96-86 158-147.5t98-107q36-45.5 50-81t14-70.5q0-60-40-100t-100-40q-47 0-87 26.5T518-680h-76q-15-41-55-67.5T300-774q-60 0-100 40t-40 100q0 35 14 70.5t50 81q36 45.5 98 107T480-228Zm0-273Z"/>
-                        } @else {
-                            <path d="M480-120l-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Z"/>
-                        }
-                    </svg>
-                    <span class="ml-2 text-sm text-gray-300">{{ likes }}</span><span class="ml-2 text-sm text-gray-300 hidden sm:inline"> Likes</span>
-                </button>
-
-                <button title="Visualizaciones totales" class="navigator flex items-center border border-gray-300 shadow p-2 rounded-lg hover:cursor-default">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-                        <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z"/>
-                    </svg>
-                    <span class="ml-2 text-sm text-gray-300">{{ article()?.views }}</span><span class="ml-2 text-sm text-gray-300 hidden sm:inline"> Views</span>
-                </button>
-
-                <button 
-                    title="{{ isReported ? 'Artículo reportado' : 'Reportar artículo' }}" 
-                    class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg sm:order-4 order-1 hidden sm:inline" 
-                    (click)="reportArticle()"
-                    [disabled]="reportDisabled || reportLoading"
-                    [class.opacity-50]="reportDisabled"
-                    [class.cursor-not-allowed]="reportDisabled">
-                    
-                    <svg class="fill-current text-gray-400 hover:text-yellow-600 transition-colors duration-300" 
-                        xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
-                        [attr.fill]="isReported ? '#ef4444' : '#e8eaed'">
-                        <path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240ZM330-120 120-330v-300l210-210h300l210 210v300L630-120H330Zm34-80h232l164-164v-232L596-760H364L200-596v232l164 164Zm116-280Z"/>
-                    </svg>
-                    
-                    @if (reportLoading) {
-                        <span class="ml-2 text-sm">Reportando...</span>
-                    }
-                    @else if (isReported) {
-                        <span class="ml-2 text-sm text-red-400 hidden sm:inline">Reportado</span>
-                    }
-                </button>
-
-                @if (isAdmin && isReported) {
+                    <div class="flex gap-x-2.5 items-center text-m">
+                        <a routerLink="/user/{{ article()?.username }}" class="flex items-center">
+                            <img
+                                [src]="getAuthorAvatar(article()?.username)"
+                                alt="Avatar de autor" 
+                                class="h-10 w-10 flex-none object-cover rounded-full bg-white/10">
+                            <span class="ml-2">{{ article()?.username }}</span>
+                        </a>
+                    </div>
                     <button 
-                        title="Desreportar artículo"
-                        class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
-                        (click)="unreportArticle()"
-                        [disabled]="unreportLoading"
-                        [class.opacity-50]="unreportLoading"
-                        [class.cursor-not-allowed]="unreportLoading">
+                        title="{{ isReported ? 'Artículo reportado' : 'Reportar artículo' }}" 
+                        class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg sm:order-4 order-1 block sm:hidden" 
+                        (click)="reportArticle()"
+                        [disabled]="reportDisabled || reportLoading"
+                        [class.opacity-50]="reportDisabled"
+                        [class.cursor-not-allowed]="reportDisabled">
                         
-                        <svg class="fill-current text-gray-400 hover:text-green-500 transition-colors duration-300" 
+                        <svg class="fill-current text-gray-400 hover:text-yellow-600 transition-colors duration-300" 
                             xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
-                            fill="#e8eaed">
-                            <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
+                            [attr.fill]="isReported ? '#ef4444' : '#e8eaed'">
+                            <path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240ZM330-120 120-330v-300l210-210h300l210 210v300L630-120H330Zm34-80h232l164-164v-232L596-760H364L200-596v232l164 164Zm116-280Z"/>
                         </svg>
                         
-                        @if (unreportLoading) {
-                            <span class="ml-2 text-sm">Desreportando...</span>
+                        @if (reportLoading) {
+                            <span class="ml-2 text-sm">Reportando...</span>
                         }
-                        @else {
-                            <span class="ml-2 text-sm text-green-400 hidden sm:inline">Desreportar</span>
+                        @else if (isReported) {
+                            <span class="ml-2 text-sm text-red-400 hidden sm:inline">Reportado</span>
                         }
-                    </button>
-                }
-                @if (isAuthor || isAdmin) {
-                    <button 
-                        title="Editar artículo"
-                        class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
-                        (click)="editArticle()">
-                        <svg class="fill-current text-gray-400 hover:text-[--button-turquoise] transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-                            <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
-                        </svg>
-                    </button>
-
-                    <button 
-                        title="Borrar artículo"
-                        class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
-                        (click)="deleteArticle()">
-                        <svg class="fill-current text-gray-400 hover:text-red-600 transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-                            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
-                        </svg>
-                    </button>
-                }
-            </div>
-        </div>
-
-        <div class="relative mb-8 rounded-2xl overflow-hidden bg-gray-800">
-            <img
-                [src]="getCurrentImage()"
-                alt="Imagen del artículo"
-                class="w-full h-96 object-cover"
-                [appDefaultImage]="'assets/images/articleDefaultImage.jpg'">
-            
-            @if (imagesLoaded && getImageCount() > 1) {
-                <div class="absolute inset-0 flex items-center justify-between p-4 opacity-0 hover:opacity-100 transition-opacity">
-                    <button 
-                        type="button"
-                        aria-label="Imagen anterior"
-                        (click)="prevImage()" 
-                        class="p-2 rounded-full bg-black/50 hover:bg-black/75">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                    </button>
-                    <button 
-                        type="button"
-                        aria-label="Imagen siguiente"
-                        (click)="nextImage()" 
-                        class="p-2 rounded-full bg-black/50 hover:bg-black/75">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
                     </button>
                 </div>
-                
-                <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                    @for (img of articleImages().get(articleId); track img.id; let i = $index) {
+    
+                <div class="flex items-center justify-center mt-3 space-x-6">
+                    <button 
+                        title="Like" class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
+                        (click)="toggleLike()">
+                        @if(!isLiked) {
+                            <svg class="fill-current text-gray-400 hover:text-[--vibrant-purple] transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                                <path d="M440-501Zm0 381L313-234q-72-65-123.5-116t-85-96q-33.5-45-49-87T40-621q0-94 63-156.5T260-840q52 0 99 22t81 62q34-40 81-62t99-22q81 0 136 45.5T831-680h-85q-18-40-53-60t-73-20q-51 0-88 27.5T463-660h-46q-31-45-70.5-72.5T260-760q-57 0-98.5 39.5T120-621q0 33 14 67t50 78.5q36 44.5 98 104T440-228q26-23 61-53t56-50l9 9 19.5 19.5L605-283l9 9q-22 20-56 49.5T498-172l-58 52Zm280-160v-120H600v-80h120v-120h80v120h120v80H800v120h-80Z"/>
+                            </svg>
+                        } @else {
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                                <path d="M440-501Zm0 381L313-234q-72-65-123.5-116t-85-96q-33.5-45-49-87T40-621q0-94 63-156.5T260-840q52 0 99 22t81 62q34-40 81-62t99-22q84 0 153 59t69 160q0 14-2 29.5t-6 31.5h-85q5-18 8-34t3-30q0-75-50-105.5T620-760q-51 0-88 27.5T463-660h-46q-31-45-70.5-72.5T260-760q-57 0-98.5 39.5T120-621q0 33 14 67t50 78.5q36 44.5 98 107T440-228q26-23 61-53t56-50l9 9 19.5 19.5L605-283l9 9q-22 20-56 49.5T498-172l-58 52Zm160-280v-80h320v80H600Z"/>
+                            </svg>
+                        }
+                    </button>
+    
+                    <button title="Likes totales" class="navigator flex items-center border border-gray-300 shadow p-2 rounded-lg hover:cursor-default">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
+                             class="heart-icon"
+                             [class.heart-animate]="isLiked"
+                             [attr.fill]="isLiked ? '#6A0DAD' : '#e8eaed'">
+                            @if(!isLiked) {
+                                <path d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Zm0-108q96-86 158-147.5t98-107q36-45.5 50-81t14-70.5q0-60-40-100t-100-40q-47 0-87 26.5T518-680h-76q-15-41-55-67.5T300-774q-60 0-100 40t-40 100q0 35 14 70.5t50 81q36 45.5 98 107T480-228Zm0-273Z"/>
+                            } @else {
+                                <path d="M480-120l-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Z"/>
+                            }
+                        </svg>
+                        <span class="ml-2 text-sm text-gray-300">{{ likes }}</span><span class="ml-2 text-sm text-gray-300 hidden sm:inline"> Likes</span>
+                    </button>
+    
+                    <button title="Visualizaciones totales" class="navigator flex items-center border border-gray-300 shadow p-2 rounded-lg hover:cursor-default">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                            <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z"/>
+                        </svg>
+                        <span class="ml-2 text-sm text-gray-300">{{ article()?.views }}</span><span class="ml-2 text-sm text-gray-300 hidden sm:inline"> Views</span>
+                    </button>
+    
+                    <button 
+                        title="{{ isReported ? 'Artículo reportado' : 'Reportar artículo' }}" 
+                        class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg sm:order-4 order-1 hidden sm:inline" 
+                        (click)="reportArticle()"
+                        [disabled]="reportDisabled || reportLoading"
+                        [class.opacity-50]="reportDisabled"
+                        [class.cursor-not-allowed]="reportDisabled">
+                        
+                        <svg class="fill-current text-gray-400 hover:text-yellow-600 transition-colors duration-300" 
+                            xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
+                            [attr.fill]="isReported ? '#ef4444' : '#e8eaed'">
+                            <path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240ZM330-120 120-330v-300l210-210h300l210 210v300L630-120H330Zm34-80h232l164-164v-232L596-760H364L200-596v232l164 164Zm116-280Z"/>
+                        </svg>
+                        
+                        @if (reportLoading) {
+                            <span class="ml-2 text-sm">Reportando...</span>
+                        }
+                        @else if (isReported) {
+                            <span class="ml-2 text-sm text-red-400 hidden sm:inline">Reportado</span>
+                        }
+                    </button>
+    
+                    @if (isAdmin && isReported) {
                         <button 
-                            type="button"
-                            (click)="currentImageIndex = i"
-                            class="w-3 h-3 rounded-full transition-all duration-200"
-                            [class.bg-white]="currentImageIndex === i"
-                            [class.bg-[--background-gray]]="currentImageIndex !== i">
+                            title="Desreportar artículo"
+                            class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
+                            (click)="unreportArticle()"
+                            [disabled]="unreportLoading"
+                            [class.opacity-50]="unreportLoading"
+                            [class.cursor-not-allowed]="unreportLoading">
+                            
+                            <svg class="fill-current text-gray-400 hover:text-green-500 transition-colors duration-300" 
+                                xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" 
+                                fill="#e8eaed">
+                                <path d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
+                            </svg>
+                            
+                            @if (unreportLoading) {
+                                <span class="ml-2 text-sm">Desreportando...</span>
+                            }
+                            @else {
+                                <span class="ml-2 text-sm text-green-400 hidden sm:inline">Desreportar</span>
+                            }
+                        </button>
+                    }
+                    @if (isAuthor || isAdmin) {
+                        <button 
+                            title="Editar artículo"
+                            class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
+                            (click)="editArticle()">
+                            <svg class="fill-current text-gray-400 hover:text-[--button-turquoise] transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                                <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
+                            </svg>
+                        </button>
+    
+                        <button 
+                            title="Borrar artículo"
+                            class="navigator flex items-center border border-gray-300 hover:scale-105 ease-in-out duration-300 shadow p-2 rounded-lg" 
+                            (click)="deleteArticle()">
+                            <svg class="fill-current text-gray-400 hover:text-red-600 transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                            </svg>
                         </button>
                     }
                 </div>
-            }
-        </div>
-
-        <div class="mx-auto max-w-2xl lg:max-w-4xl">
-            <div class="bg-[--sidebar-gray] p-6 rounded-2xl shadow-lg">
-                <div class="prose prose-invert max-w-none 
-                            text-lg lg:text-xl 
-                            prose-headings:text-2xl lg:prose-headings:text-3xl
-                            leading-relaxed space-y-4">
-                <quill-view [content]="article()?.body"></quill-view>
+            </div>
+    
+            <div class="relative mb-8 rounded-2xl overflow-hidden bg-gray-800">
+                <img
+                    [src]="getCurrentImage()"
+                    alt="Imagen del artículo"
+                    class="w-full h-96 object-cover"
+                    [appDefaultImage]="'assets/images/articleDefaultImage.jpg'">
+                
+                @if (imagesLoaded && getImageCount() > 1) {
+                    <div class="absolute inset-0 flex items-center justify-between p-4 opacity-0 hover:opacity-100 transition-opacity">
+                        <button 
+                            type="button"
+                            aria-label="Imagen anterior"
+                            (click)="prevImage()" 
+                            class="p-2 rounded-full bg-black/50 hover:bg-black/75">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <button 
+                            type="button"
+                            aria-label="Imagen siguiente"
+                            (click)="nextImage()" 
+                            class="p-2 rounded-full bg-black/50 hover:bg-black/75">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                        @for (img of articleImages().get(articleId); track img.id; let i = $index) {
+                            <button 
+                                type="button"
+                                (click)="currentImageIndex = i"
+                                class="w-3 h-3 rounded-full transition-all duration-200"
+                                [class.bg-white]="currentImageIndex === i"
+                                [class.bg-[--background-gray]]="currentImageIndex !== i">
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+    
+            <div class="mx-auto max-w-2xl lg:max-w-4xl">
+                <div class="bg-[--sidebar-gray] p-6 rounded-2xl shadow-lg">
+                    <div class="prose prose-invert max-w-none 
+                                text-lg lg:text-xl 
+                                prose-headings:text-2xl lg:prose-headings:text-3xl
+                                leading-relaxed space-y-4">
+                    <quill-view [content]="article()?.body"></quill-view>
+                    </div>
                 </div>
             </div>
-        </div>
+        } @else {
+            <div class="text-center py-20">
+                <h2 class="text-2xl font-bold text-white">Artículo no encontrado</h2>
+                <p class="text-gray-300 mt-4">El artículo que buscas no existe o ha sido eliminado.</p>
+                <a routerLink="/" class="mt-6 inline-block px-6 py-2 bg-[--button-turquoise] text-white rounded-lg hover:bg-[--button-turquoise-hover] transition-colors">
+                    Volver al inicio
+                </a>
+            </div>
+        }
     </div>
     <!-- <app-sidebar class="sticky top-0 h-screen border-l border-[--accent-silver] w-78 rounded-l-lg"></app-sidebar> -->
 </div>
